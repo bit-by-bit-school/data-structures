@@ -41,6 +41,7 @@ class DoublyLinkedList {
 		if (k === this.length) {
 			const oldEnd = this.end
 			this.end = new Node(val, oldEnd, null)
+			oldEnd.next = this.end
 			this.length++
 			return
 		}
@@ -81,7 +82,7 @@ class DoublyLinkedList {
 		}
 		this.length--
 	}
-	getNode(val) {
+	get(val) {
 		if (!this.head) throw new Error("Empty Linked List");
 		let currNode = this.head
 		while (currNode) {
@@ -92,22 +93,18 @@ class DoublyLinkedList {
 	}
 	print() {
 		let currNode = this.head
+		const vals = []
 		while (currNode) {
-			console.log(currNode.val, currNode.prev && currNode.prev.val, currNode.next && currNode.next.val)
+			vals.push({
+				val: currNode.val,
+				prev: currNode.prev?.val || null,
+				next: currNode.next?.val || null
+			})
 			currNode = currNode.next
 		}
+		return vals
 	}
 
 }
 
 module.exports = { DoublyLinkedList, Node }
-
-const node1 = new Node(1)
-const node2 = new Node(2, node1)
-// console.log(node2)
-
-const ll = new DoublyLinkedList([1, 2, 3])
-ll.insert(4, 3)
-ll.del(4)
-ll.print()
-// console.log(ll.getNode(4))
