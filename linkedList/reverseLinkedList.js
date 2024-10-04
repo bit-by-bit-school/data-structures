@@ -21,5 +21,3 @@ const reverseLinkedList = (ll) => {
 	currNode.next = prevNode
 	return ll.head
 }
-
-console.log(reverseLinkedList(new LinkedList([1,2])))

@@ -21,6 +21,5 @@ test('Search Linked List via index', () => {
 
 test('Get all node vals', () => {
 	const ll = new LinkedList([1, 2, 3])
-	console.log(ll.getAll())
 	expect(ll.getAll().length).toBe(3)
 })

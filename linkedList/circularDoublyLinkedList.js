@@ -36,11 +36,17 @@ class CircularDoublyLinkedList extends DoublyLinkedList {
 	}
 	_insertMiddle(val, index) {
 		const node = (index <= Math.floor(this.length / 2)) ?
-			this._traverse(this.head, "next", (node) => node === this.#getEnd(), (acc, curr) => curr,
+			this._traverse(this.head,
+				"next",
+				(node) => node === this.#getEnd(),
+				(acc, curr) => curr,
 				(node, i) => i === index
 			) :
-			this._traverse(this.#getEnd(), "prev", (node) => node === this.head, (acc, curr) => curr,
-				(node, i) => i === index
+			this._traverse(this.#getEnd(),
+				"prev",
+				(node) => node === this.head,
+				(acc, curr) => curr,
+				(node, i) => i === this.length - index + 1
 			)
 		const newNode = new Node(val, node, node.next)
 		node.next = newNode
@@ -62,11 +68,17 @@ class CircularDoublyLinkedList extends DoublyLinkedList {
 	}
 	delMiddle(index) {
 		const node = (index <= Math.floor(this.length / 2)) ?
-			this._traverse(this.head, "next", (node) => node === this.#getEnd(), (acc, curr) => curr,
+			this._traverse(this.head,
+				"next",
+				(node) => node === this.#getEnd(),
+				(acc, curr) => curr,
 				(node, i) => i === index
 			) :
-			this._traverse(this.#getEnd(), "prev", (node) => node === this.head, (acc, curr) => curr,
-				(node, i) => i === index
+			this._traverse(this.#getEnd(),
+				"prev",
+				(node) => node === this.head,
+				(acc, curr) => curr,
+				(node, i) => i === this.length - index + 1
 			)
 		node.prev.next = node.next
 		node.next.prev = node.prev
@@ -74,7 +86,10 @@ class CircularDoublyLinkedList extends DoublyLinkedList {
 	}
 	_getByVal(val) {
 		if (this.length === 0) throw this._invalidValError
-		const node = this._traverse(this.head, "next", (node) => node === this.head, (acc, curr) => curr,
+		const node = this._traverse(this.head,
+			"next",
+			(node) => node === this.#getEnd(),
+			(acc, curr) => curr,
 			(node, i) => node.val === val
 		)
 		if (node) return node
@@ -82,19 +97,28 @@ class CircularDoublyLinkedList extends DoublyLinkedList {
 	}
 	_get(index) {
 		const node = (index <= Math.floor(this.length / 2)) ?
-			this._traverse(this.head, "next", (node) => node === this.#getEnd(), (acc, curr) => curr,
+			this._traverse(this.head,
+				"next",
+				(node) => node === this.#getEnd(),
+				(acc, curr) => curr,
 				(node, i) => i === index
 			) :
-			this._traverse(this.#getEnd(), "prev", (node) => node === this.head, (acc, curr) => curr,
-				(node, i) => i === index
+			this._traverse(this.#getEnd(),
+				"prev",
+				(node) => node === this.head,
+				(acc, curr) => curr,
+				(node, i) => i === this.length - index + 1
 			)
 		if (node) return node.val
 		throw this._invalidValError
 	}
 	getAll() {
-		return this._traverse(this.head, "next", (node) => node === this.head, (acc, curr) => [...acc, curr.val], (node, i) => true, [])
+		return this._traverse(this.head, "next",
+			(node) => node === this.#getEnd(),
+			(acc, curr) => [...acc, curr.val],
+			(node, i) => true, []
+		)
 	}
 }
 
 module.exports = { CircularDoublyLinkedList }
-// use Queue interface that uses LL interface internally

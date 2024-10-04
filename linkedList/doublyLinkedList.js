@@ -30,12 +30,10 @@ class DoublyLinkedList {
 		this.end = refs[1]
 	}
 	_traverse(startNode, direction, stopCondition, op, filter, init) {
-		console.log("stopCondition", stopCondition.toString(), "startnode", startNode, "direction", direction, "op", op, "filter", filter, "init", init)
 		let currNode = startNode
 		let index = 1
 		let acc = init
 		while (true) {
-			console.log("currNode", currNode)
 			if (filter(currNode, index)) {
 				acc = op(acc, currNode)
 			}
@@ -43,7 +41,6 @@ class DoublyLinkedList {
 			currNode = currNode[direction]
 			index++
 		}
-		console.log("acc", acc)
 		return acc
 	}
 	#find = (startNode, direction, index) => this._traverse(startNode, direction, (node) => !node[direction], (acc, curr) => curr,
@@ -62,7 +59,6 @@ class DoublyLinkedList {
 		const newNode = new Node(val, node, node.next)
 		node.next = newNode
 		newNode.next.prev = newNode
-		console.log("traversed node", node, "new node", newNode)
 		this.length++
 	}
 	_insertStart(val) {
