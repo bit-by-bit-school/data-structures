@@ -7,6 +7,16 @@ class Node {
 }
 
 class DoublyLinkedList {
+	_invalidIndexError = new Error("Invalid index")
+	_invalidValError = new Error("Invalid node val")
+	_createNodes(vals) {
+		vals = vals.map(val => new Node(val))
+		vals.forEach((n, i) => {
+			n.prev = vals[i - 1] || null
+			n.next = vals[i + 1] || null
+		})
+		return [vals[0], vals[vals.length - 1]]
+	}
 	constructor(vals) {
 		if (!vals.length) {
 			this.head = null
@@ -14,97 +24,95 @@ class DoublyLinkedList {
 			this.length = 0
 			return
 		}
-		vals = vals.map(v => new Node(v))
-
-		this.end = vals[vals.length - 1]
-		this.head = vals[0]
-		this.head.prev = null
-		this.head.next = vals[1]
-		this.end.next = null
-		this.end.prev = vals[vals.length - 2]
 		this.length = vals.length
-
-		for (let i = 1; i < vals.length - 1; i++) {
-			vals[i].prev = vals[i - 1]
-			vals[i].next = vals[i + 1]
-		}
+		let refs = this._createNodes(vals)
+		this.head = refs[0]
+		this.end = refs[1]
 	}
-	insert(val, k) {
-		if (!this.head) throw new Error("Empty Linked List");
-		if (k === 0) {
-			const oldHead = this.head
-			this.head = new Node(val, null, oldHead)
-			oldHead.prev = this.head
-			this.length++
-			return
+	_traverse(startNode, direction, stopCondition, op, filter, init) {
+		console.log("stopCondition", stopCondition.toString(), "startnode", startNode, "direction", direction, "op", op, "filter", filter, "init", init)
+		let currNode = startNode
+		let index = 1
+		let acc = init
+		while (true) {
+			console.log("currNode", currNode)
+			if (filter(currNode, index)) {
+				acc = op(acc, currNode)
+			}
+			if (stopCondition(currNode)) break
+			currNode = currNode[direction]
+			index++
 		}
-		if (k === this.length) {
-			const oldEnd = this.end
-			this.end = new Node(val, oldEnd, null)
-			oldEnd.next = this.end
-			this.length++
-			return
-		}
-		let currNode = this.head
-		let count = 1
-		while (count < k) {
-			if (!currNode.next) throw new Error("Invalid place");
-			currNode = currNode.next
-			count++
-		}
-		const newNode = new Node(val, currNode, currNode.next)
-		currNode.next = newNode
-		if (newNode.next) newNode.next.prev = newNode
+		console.log("acc", acc)
+		return acc
+	}
+	#find = (startNode, direction, index) => this._traverse(startNode, direction, (node) => !node[direction], (acc, curr) => curr,
+		(node, i) => i === index
+	)
+	insert(val, index) {
+		if (index > this.length) throw this._invalidIndexError
+		if (index === 0) this._insertStart(val)
+		if (index === this.length) this._insertEnd(val)
+		else this._insertMiddle(val, index)
+	}
+	_insertMiddle(val, index) {
+		const node = (index <= Math.floor(this.length / 2)) ?
+			this.#find(this.head, "next", index) :
+			this.#find(this.end, "prev", this.length - index + 1)
+		const newNode = new Node(val, node, node.next)
+		node.next = newNode
+		newNode.next.prev = newNode
+		console.log("traversed node", node, "new node", newNode)
 		this.length++
 	}
-	del(k) {
-		if (!this.head || k < 1) throw new Error("Empty Linked List");
-		if (k === this.length) {
-			this.end.prev.next = null
-			this.end = this.end.prev
-			this.length--
-			return
-		}
-		let currNode = this.head
-		let count = 1
-		while (count < k) {
-			if (!currNode.next) throw new Error("Invalid place");
-			currNode = currNode.next
-			count++
-		}
-		if (!currNode.prev) {
-			currNode.next.prev = null
-			this.head = currNode.next
-		}
-		else {
-			currNode.prev.next = currNode.next
-			currNode.next.prev = currNode.prev
-		}
+	_insertStart(val) {
+		const oldHead = this.head
+		this.head = new Node(val, null, oldHead)
+		oldHead.prev = this.head
+		this.length++
+	}
+	_insertEnd(val) {
+		const oldEnd = this.end
+		this.end = new Node(val, oldEnd, null)
+		oldEnd.next = this.end
+		this.length++
+	}
+	del(index) {
+		if (index > this.length || index === 0) throw this._invalidIndexError
+		if (index === this.length) this._delEnd()
+		else this._delMiddle(index)
+	}
+	_delEnd() {
+		this.end.prev.next = null
+		this.end = this.end.prev
 		this.length--
 	}
-	get(val) {
-		if (!this.head) throw new Error("Empty Linked List");
-		let currNode = this.head
-		while (currNode) {
-			if (currNode.val === val) return currNode
-			currNode = currNode.next
-		}
-		throw new Error("Invalid node val");
+	_delMiddle(index) {
+		const node = (index <= Math.floor(this.length / 2)) ?
+			this.#find(this.head, "next", index) :
+			this.#find(this.end, "prev", this.length - index)
+		node.prev.next = node.next
+		node.next.prev = node.prev
+		this.length--
 	}
-	print() {
-		let currNode = this.head
-		const vals = []
-		while (currNode) {
-			vals.push({
-				val: currNode.val,
-				prev: currNode.prev?.val || null,
-				next: currNode.next?.val || null
-			})
-			currNode = currNode.next
-		}
-		return vals
+	_getByVal(val) {
+		if (this.length === 0) throw this._invalidValError
+		const node = this._traverse(this.head, "next", (node) => !node.next, (acc, curr) => curr,
+			(node, i) => node.val === val
+		)
+		if (node) return node
+		throw this._invalidValError
 	}
-
+	_get(index) {
+		const node = (index <= Math.floor(this.length / 2)) ?
+			this.#find(this.head, "next", index) :
+			this.#find(this.end, "prev", this.length - index + 1)
+		if (node) return node.val
+		throw this._invalidValError
+	}
+	getAll() {
+		return this._traverse(this.head, "next", (node) => !node.next, (acc, curr) => [...acc, curr.val], (node, i) => true, [])
+	}
 }
 
 module.exports = { DoublyLinkedList, Node }

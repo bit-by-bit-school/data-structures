@@ -1,3 +1,5 @@
+// skip list uses LL 
+
 class Node {
 	constructor(val, prev, nexts) {
 		this.val = val
@@ -31,16 +33,23 @@ class SkipList {
 		}
 
 		let currNode = this.head
+		let nextNode = currNode.nexts[currNode.nexts.length - 1]
+		console.log("before loop", currNode, nextNode)
 
 		while (this.head.nexts[this.head.nexts.length - 1].nexts) {
-			console.log("currNode", currNode)
-			let nextNode = currNode.nexts[this.head.nexts.length - 1]
-			if (Math.random() > 0.5) {
+			console.log("currNode", currNode, "nextNode", nextNode)
+			if (!nextNode.nexts) {
+				currNode.nexts.push(nextNode)
+				currNode = this.head
+				nextNode = currNode.nexts[currNode.nexts.length - 1]
+				continue
+			}
+			if (Math.random() > 0.5) { // no magic numbers p = 0.5 default pass to constructor
+				console.log(1)
 				currNode.nexts.push(nextNode)
 				currNode = nextNode
 			}
-
-
+			nextNode = nextNode.nexts[nextNode.nexts.length - 1]
 		}
 
 
@@ -115,36 +124,15 @@ class SkipList {
 			vals.push({
 				val: currNode.val,
 				prev: currNode.prev?.val || null,
-				next: currNode.next?.val || null
+				nexts: currNode.nexts?.map(n => n.val) || null
 			})
-			currNode = currNode.next
+			currNode = currNode.nexts ? currNode.nexts[0] : null
 		}
 		return vals
 	}
 
 }
 
-// const makeLayers = (vals) => {
-// 	const layers = [[]]
+const vals = [1, 2, 3, 4, 5, 6, 7, 8]
 
-// 	for (let i = 1; i < n - 1; i++) {
-// 		if (Math.random() > 0.5) layers[layers.length - 1].push(i)
-// 	}
-
-// 	let currentLayer = layers[layers.length - 1]
-
-// 	while (currentLayer.length >= 1) {
-// 		let newLayer = []
-// 		currentLayer.forEach((val) => {
-// 			if (Math.random() > 0.5) newLayer.push(val)
-// 		})
-
-// 		layers.push(newLayer)
-// 		currentLayer = layers[layers.length - 1]
-// 	}
-
-// 	return layers
-// }
-
-const vals = [1,2,3,4,5,6,7,8]
-console.log(new SkipList(vals))
+console.log(new SkipList(vals).print())

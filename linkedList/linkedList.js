@@ -6,99 +6,89 @@ class Node {
 }
 
 class LinkedList {
+	#invalidIndexError = new Error("Invalid index")
+	#invalidValError = new Error("Invalid node val")
+	#head
+	#end
 	constructor(vals) {
 		if (!vals.length) {
-			this.head = null
-			this.end = null
+			this.#head = null
+			this.#end = null
 			this.length = 0
 			return
 		}
-		this.end = {
-			val: vals[vals.length - 1],
-			next: null
-		}
+		this.#end = new Node(vals[vals.length - 1], null)
+		this.#head = vals.slice(0, vals.length - 1)
+			.reduceRight((acc, curr) => {
+				return new Node(curr, acc)
+			}, this.#end)
 		this.length = vals.length
-		let currNode = this.end
 
-		for (let i = vals.length - 2; i >= 0; i--) {
-			currNode = new Node(vals[i], currNode)
-		}
-		this.head = currNode
 	}
-	insert(val, place) {
-		let currNode = this.head
-		while (currNode) {
-			if (currNode.val === place) {
-				currNode.next = new Node(val, currNode.next)
-				this.length++
-				return
+	#traverse(op, filter, init) {
+		let currNode = this.#head
+		let index = 1
+		let acc = init
+		while (true) {
+			if (filter(currNode, index)) {
+				acc = op(acc, currNode)
 			}
 			currNode = currNode.next
+			if (!currNode) break
+			index++
 		}
-		throw new Error("Invalid place");
-
+		return acc
 	}
-	insertStart(val) {
-		const oldStart = this.head
-		this.head = new Node(val, oldStart)
+	#find = (index) => this.#traverse((acc, curr) => curr,
+		(node, i) => i === index
+	)
+	insert(val, index) {
+		if (index > this.length) throw this.#invalidIndexError
+		if (index === 0) {
+			this.#head = new Node(val, this.#head)
+			this.length++
+			return
+		}
+		if (index === this.length) {
+			this.#end.next = new Node(val, null)
+			this.#end = this.#end.next
+			this.length++
+			return
+		}
+		const node = this.#find(index)
+		node.next = new Node(val, node.next)
 		this.length++
 	}
-	insertEnd(val) {
-		const oldEnd = this.end
-		this.end = new Node(val, oldEnd)
-		this.length++
-	}
-	del(val) {
-		if (!this.head) throw new Error("Empty Linked List");
-		if (!this.head) throw new Error("Invalid place");
-		let prevNode = this.head
-		while (prevNode.next) {
-			if (prevNode.next.val === val) {
-				const oldNext = prevNode.next
-				prevNode.next = prevNode.next.next
-				// delete oldNext
-				this.length--
-				return
-			}
-			prevNode = prevNode.next
+	del(index) {
+		if (index > this.length) throw this.#invalidIndexError
+		if (index - 1 === 0) {
+			this.#head = this.#head.next
+			this.length--
+			return
 		}
-		throw new Error("Invalid place");
-	}
-	delStart() {
-		if (!this.head) throw new Error("Empty Linked List");
-		const oldHead = this.head
-		this.head = this.head.next
-		// delete oldHead
+		const node = this.#find(index - 1)
+		if (index === this.length) {
+			this.#end = node
+			node.next = null
+			this.length--
+			return
+		}
+		node.next = node.next.next
 		this.length--
 	}
-	delEnd() {
-		if (!this.head) throw new Error("Empty Linked List");
-		let currNode = this.head
-		while (currNode.next.next) {
-			currNode = currNode.next
-		}
-		this.end = currNode
-		currNode.next = null
-		this.length--
+	get(val) {
+		if (this.length === 0) throw this.#invalidValError
+		const node = this.#traverse((acc, curr) => curr,
+			(node, i) => node.val === val
+		)
+		if (node) return node
+		throw this.#invalidValError
 	}
-	getNode(val) {
-		if (!this.head) throw new Error("Empty Linked List");
-		let currNode = this.head
-		while (currNode) {
-			if (currNode.val === val) return currNode
-			currNode = currNode.next
-		}
-		throw new Error("Invalid node val");
+	getAll() {
+		return this.#traverse((acc, curr) => [...acc, curr.val], (node, i) => true, [])
 	}
-
 }
 
-module.exports = {LinkedList, Node}
-// const node1 = new Node(1)
-// const node2 = new Node(2, node1)
-// console.log(node2)
-// const ll = new LinkedList([1,2,3])
-// ll.insert(4, 2)
-// console.log(ll.getNode(4))
-// ll.del(4)
-// console.log(ll.getNode(4))
+module.exports = { LinkedList }
+
+const a = new LinkedList([1, 2, 3])
