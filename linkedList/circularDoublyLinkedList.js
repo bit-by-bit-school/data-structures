@@ -17,21 +17,20 @@ class CircularDoublyLinkedList extends DoublyLinkedList {
 	}
 	insert(val, index) {
 		if (index > this.length) throw this._invalidIndexError
-		if (index === 0) this._insertStart(val)
-		if (index === this.length) this._insertEnd(val)
-		else this._insertMiddle(val, index)
+		if (index === 0) return this._insertStart(val)
+		if (index === this.length) return this._insertEnd(val)
+		else return this._insertMiddle(val, index)
 	}
 	_insertStart(val) {
 		const end = this.#getEnd()
 		super._insertStart(val)
 		end.next = this.head
-		this.head = end
+		this.head.prev = end
 	}
 	_insertEnd(val) {
 		const node = new Node(val, this.#getEnd(), this.head)
 		this.#getEnd().next = node
 		this.head.prev = node
-		this.head = node
 		this.length++
 	}
 	_insertMiddle(val, index) {
@@ -53,20 +52,28 @@ class CircularDoublyLinkedList extends DoublyLinkedList {
 		newNode.next.prev = newNode
 		this.length++
 	}
-	_del(index) {
+	del(index) {
 		if (index > this.length || index === 0) throw this._invalidIndexError
-		if (index === this.length) this._delEnd()
-		else this._delMiddle(index)
+		if (index === 1) return this._delStart()
+		if (index === this.length) return this._delEnd()
+		else return this._delMiddle(index)
 	}
-	delEnd() {
+	_delEnd() {
 		const end = this.#getEnd()
 		const prev = end.prev
 		const next = end.next
 		prev.next = next
 		next.prev = prev
 		this.length--
+		return end.val
 	}
-	delMiddle(index) {
+	_delStart() {
+		const deletedVal = this._delMiddle(1)
+		console.log("head in del end", this.head)
+		this.head = this.head.next
+		return deletedVal
+	}
+	_delMiddle(index) {
 		const node = (index <= Math.floor(this.length / 2)) ?
 			this._traverse(this.head,
 				"next",
@@ -82,7 +89,9 @@ class CircularDoublyLinkedList extends DoublyLinkedList {
 			)
 		node.prev.next = node.next
 		node.next.prev = node.prev
+		console.log("node", node)
 		this.length--
+		return node.val
 	}
 	_getByVal(val) {
 		if (this.length === 0) throw this._invalidValError
@@ -121,4 +130,4 @@ class CircularDoublyLinkedList extends DoublyLinkedList {
 	}
 }
 
-module.exports = { CircularDoublyLinkedList }
+module.exports = { CircularDoublyLinkedList, Node }
