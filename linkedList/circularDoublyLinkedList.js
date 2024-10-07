@@ -1,4 +1,10 @@
-const { DoublyLinkedList, Node } = require("./doublyLinkedList.js")
+class Node {
+	constructor(val, prev, next) {
+		this.val = val
+		this.next = next || null
+		this.prev = prev || null
+	}
+}
 
 class CircularDoublyLinkedList {
 	constructor(vals) {

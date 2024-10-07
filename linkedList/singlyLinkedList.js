@@ -5,7 +5,7 @@ class Node {
 	}
 }
 
-class LinkedList {
+class SinglyLinkedList {
 	#invalidIndexError = new Error("Invalid index")
 	#head
 	#end
@@ -84,11 +84,24 @@ class LinkedList {
 		}
 		return vals
 	}
+	reverse() {
+		let prevHead = this.#head
+		let prevEnd = this.#end
+		this.#end = prevHead
+		this.#head = prevEnd
+
+		let currNode = prevHead
+		let nextNode = currNode.next
+		let prevNode = null
+
+		while (nextNode) {
+			currNode.next = prevNode
+			prevNode = currNode
+			currNode = nextNode
+			nextNode = nextNode.next
+		}
+		currNode.next = prevNode
+	}
 }
 
-module.exports = { LinkedList }
-
-const a = new LinkedList([1, 2, 3])
-
-// static methods csn be called on class itself
-
+module.exports = { SinglyLinkedList }
