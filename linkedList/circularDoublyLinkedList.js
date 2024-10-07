@@ -10,6 +10,7 @@ class CircularDoublyLinkedList {
 		this.head = refs[0]
 		this.head.prev = refs[1]
 		refs[1].next = this.head
+		this.length = vals.length
 	}
 	_createNodes(vals) {
 		vals = vals.map(val => new Node(val))
@@ -56,7 +57,7 @@ class CircularDoublyLinkedList {
 		this.length++
 	}
 	_insertMiddle(val, index) {
-		console.log("insert middle index", index)
+		console.log("insert middle index", index, this.length)
 		const node = (index <= Math.floor(this.length / 2)) ?
 			this.#traverse(this.head, "next", index) :
 			this.#traverse(this.#getEnd(), "prev", this.length - index + 1)
@@ -106,10 +107,10 @@ class CircularDoublyLinkedList {
 		const vals = []
 		while (true) {
 			vals.push(currNode.val)
-			if (currNode.next === this.#getEnd()) break
+			if (currNode.next === this.head) break
 			currNode = currNode.next
 		}
-		return null
+		return vals
 	}
 }
 
