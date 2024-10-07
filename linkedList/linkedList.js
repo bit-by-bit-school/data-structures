@@ -7,7 +7,6 @@ class Node {
 
 class LinkedList {
 	#invalidIndexError = new Error("Invalid index")
-	#invalidValError = new Error("Invalid node val")
 	#head
 	#end
 	constructor(vals) {
@@ -25,23 +24,17 @@ class LinkedList {
 		this.length = vals.length
 
 	}
-	#traverse(op, filter, init) {
+	#traverse(index) {
 		let currNode = this.#head
-		let index = 1
-		let acc = init
+		let count = 1
 		while (true) {
-			if (filter(currNode, index)) {
-				acc = op(acc, currNode)
-			}
+			if (count === index) return currNode
+			if (!currNode.next) break
 			currNode = currNode.next
-			if (!currNode) break
-			index++
+			count++
 		}
-		return acc
+		return null
 	}
-	#find = (index) => this.#traverse((acc, curr) => curr,
-		(node, i) => i === index
-	)
 	insert(val, index) {
 		if (index > this.length) throw this.#invalidIndexError
 		if (index === 0) {
@@ -55,7 +48,7 @@ class LinkedList {
 			this.length++
 			return
 		}
-		const node = this.#find(index)
+		const node = this.#traverse(index)
 		node.next = new Node(val, node.next)
 		this.length++
 	}
@@ -66,7 +59,7 @@ class LinkedList {
 			this.length--
 			return
 		}
-		const node = this.#find(index - 1)
+		const node = this.#traverse(index - 1)
 		if (index === this.length) {
 			this.#end = node
 			node.next = null
@@ -76,19 +69,26 @@ class LinkedList {
 		node.next = node.next.next
 		this.length--
 	}
-	get(val) {
-		if (this.length === 0) throw this.#invalidValError
-		const node = this.#traverse((acc, curr) => curr,
-			(node, i) => node.val === val
-		)
-		if (node) return node
-		throw this.#invalidValError
+	get(index) {
+		const node = this.#traverse(index)
+		if (node) return node.val
+		throw this.#invalidIndexError
 	}
 	getAll() {
-		return this.#traverse((acc, curr) => [...acc, curr.val], (node, i) => true, [])
+		let currNode = this.#head
+		const vals = []
+		while (true) {
+			vals.push(currNode.val)
+			currNode = currNode.next
+			if (!currNode) break
+		}
+		return vals
 	}
 }
 
 module.exports = { LinkedList }
 
 const a = new LinkedList([1, 2, 3])
+
+// static methods csn be called on class itself
+

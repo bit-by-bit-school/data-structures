@@ -29,23 +29,17 @@ class DoublyLinkedList {
 		this.head = refs[0]
 		this.end = refs[1]
 	}
-	_traverse(startNode, direction, stopCondition, op, filter, init) {
+	#traverse(startNode, direction, index) {
 		let currNode = startNode
-		let index = 1
-		let acc = init
+		let count = 1
 		while (true) {
-			if (filter(currNode, index)) {
-				acc = op(acc, currNode)
-			}
-			if (stopCondition(currNode)) break
+			if (count === index) return currNode
+			if (!currNode[direction]) break
 			currNode = currNode[direction]
-			index++
+			count++
 		}
-		return acc
+		return null
 	}
-	#find = (startNode, direction, index) => this._traverse(startNode, direction, (node) => !node[direction], (acc, curr) => curr,
-		(node, i) => i === index
-	)
 	insert(val, index) {
 		if (index > this.length) throw this._invalidIndexError
 		if (index === 0) this._insertStart(val)
@@ -54,8 +48,8 @@ class DoublyLinkedList {
 	}
 	_insertMiddle(val, index) {
 		const node = (index <= Math.floor(this.length / 2)) ?
-			this.#find(this.head, "next", index) :
-			this.#find(this.end, "prev", this.length - index + 1)
+			this.#traverse(this.head, "next", index) :
+			this.#traverse(this.end, "prev", this.length - index + 1)
 		const newNode = new Node(val, node, node.next)
 		node.next = newNode
 		newNode.next.prev = newNode
@@ -85,29 +79,28 @@ class DoublyLinkedList {
 	}
 	_delMiddle(index) {
 		const node = (index <= Math.floor(this.length / 2)) ?
-			this.#find(this.head, "next", index) :
-			this.#find(this.end, "prev", this.length - index)
+			this.#traverse(this.head, "next", index) :
+			this.#traverse(this.end, "prev", this.length - index)
 		node.prev.next = node.next
 		node.next.prev = node.prev
 		this.length--
 	}
-	_getByVal(val) {
-		if (this.length === 0) throw this._invalidValError
-		const node = this._traverse(this.head, "next", (node) => !node.next, (acc, curr) => curr,
-			(node, i) => node.val === val
-		)
-		if (node) return node
-		throw this._invalidValError
-	}
 	_get(index) {
 		const node = (index <= Math.floor(this.length / 2)) ?
-			this.#find(this.head, "next", index) :
-			this.#find(this.end, "prev", this.length - index + 1)
+			this.#traverse(this.head, "next", index) :
+			this.#traverse(this.end, "prev", this.length - index + 1)
 		if (node) return node.val
 		throw this._invalidValError
 	}
 	getAll() {
-		return this._traverse(this.head, "next", (node) => !node.next, (acc, curr) => [...acc, curr.val], (node, i) => true, [])
+		let currNode = this.head
+		const vals = []
+		while (true) {
+			vals.push(currNode.val)
+			if (!currNode.next) break
+			currNode = currNode.next
+		}
+		return vals
 	}
 }
 

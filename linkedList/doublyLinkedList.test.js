@@ -9,9 +9,7 @@ test('Inserts to Doubly Linked List', () => {
 test('Deletes from Doubly Linked List', () => {
 	const ll = new DoublyLinkedList([1, 2, 3])
 	ll.del(3)
-	expect(() => {
-		ll.get(3)
-	}).toThrow()
+	expect(ll.getAll().length).toBe(2)
 })
 
 test('Get all node vals', () => {

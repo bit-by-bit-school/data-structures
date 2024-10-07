@@ -8,7 +8,7 @@ class Queue {
 	}
 	enqueue(val) {
 		console.log("storage head", this.#storage.head)
-		this.#storage.insert(val, this.#storage.length)
+		this.#storage.insert(val, this.#storage.length) // -1 without knowing length
 	}
 	dequeue() {
 		return this.#storage.del(1)
@@ -19,4 +19,6 @@ class Queue {
 }
 
 module.exports = { Queue }
+
+// implement deck
 

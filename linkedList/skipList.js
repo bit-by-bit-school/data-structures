@@ -1,5 +1,3 @@
-// skip list uses LL
-
 class Node {
 	constructor(val, prev, nexts) {
 		this.val = val
@@ -48,37 +46,49 @@ class SkipList {
 			}
 			nextNode = nextNode.nexts[nextNode.nexts.length - 1]
 		}
-
-
 	}
-
-	insert(val, k) {
-		if (!this.head) throw new Error("Empty Linked List");
-		if (k === 0) {
-			const oldHead = this.head
-			this.head = new Node(val, null, oldHead)
-			oldHead.prev = this.head
-			this.length++
-			return
-		}
-		if (k === this.length) {
-			const oldEnd = this.end
-			this.end = new Node(val, oldEnd, null)
-			oldEnd.next = this.end
-			this.length++
-			return
-		}
+	findPlacementNodeForInsertion(val) {
 		let currNode = this.head
-		let count = 1
-		while (count < k) {
-			if (!currNode.next) throw new Error("Invalid place");
-			currNode = currNode.next
-			count++
+		let reqNode = null
+		const nodesToUpdate = []
+		while (currNode.nexts) {
+			console.log("currNode", currNode)
+			for (let i = currNode.nexts.length - 1; i >= 0; i--) {
+				const currNext = currNode.nexts[i]
+				console.log('currNext', currNext)
+				if (currNext.val === val) {
+					console.log("breaks here 1", currNext)
+					reqNode = currNext
+					return [reqNode, nodesToUpdate]
+				}
+				if (currNext.val < val) {
+					console.log("breaks here 2", currNext)
+					currNode = currNext
+					break
+				}
+				if (Math.random() > 0.5) nodesToUpdate.push([currNode, i])
+			}
+			if (currNode.nexts[0].val >= currNode.val) return [currNode, nodesToUpdate]
+			currNode = currNode.nexts[0]
 		}
-		const newNode = new Node(val, currNode, currNode.next)
-		currNode.next = newNode
-		if (newNode.next) newNode.next.prev = newNode
+		return [currNode, nodesToUpdate]
+	}
+	insert(val) {
+		if (!this.head) throw new Error("Empty Linked List");
+		const [reqNode, nodesToUpdate] = this.findPlacementNodeForInsertion(val)
+		console.log("reqNode", reqNode)
+		const newNode = new Node(val, reqNode, [])
+		reqNode.nexts.unshift(newNode)
+		this.createNexts(nodesToUpdate, newNode)
 		this.length++
+	}
+	createNexts(nodesToUpdate, node) {
+		console.log("nodes to update", nodesToUpdate)
+		nodesToUpdate.forEach(ele => {
+			const nextNode = ele[0].nexts[ele[1]]
+			node.nexts.unshift(nextNode)
+			ele[0].nexts[ele[1]] = node
+		})
 	}
 	del(k) {
 		if (!this.head || k < 1) throw new Error("Empty Linked List");
@@ -108,9 +118,21 @@ class SkipList {
 	get(val) {
 		if (!this.head) throw new Error("Empty Linked List");
 		let currNode = this.head
-		while (currNode) {
-			if (currNode.val === val) return currNode
-			currNode = currNode.next
+		let reqNode = null
+		const predecessors = []
+		while (!reqNode) {
+			for (let i = currNode.nexts.length - 1; i >= 0; i--) {
+				if (currNode.nexts[i].val === val) {
+					reqNode = currNode.nexts[i]
+					break
+				}
+				if (currNode.nexts[i].val < val) {
+					predecessors.push(currNode.nexts[i])
+					currNode = currNode.nexts[i]
+					break
+				}
+			}
+			if (!reqNode) break
 		}
 		throw new Error("Invalid node val");
 	}
@@ -130,5 +152,27 @@ class SkipList {
 
 }
 
-const vals = [1, 2, 3, 4, 5, 6, 7, 8]
+const vals = [1, 2, 3, 4, 6, 7, 8]
+const sl = new SkipList(vals)
+console.log(sl.print())
+sl.insert(5)
+console.log(sl.print())
 
+const createNexts = () => {
+	const next = 9
+	const prevNexts = [2, 3, 5, 8]
+	const newNexts = []
+	const newPrevNexts = []
+	prevNexts.forEach(n => {
+		if (Math.random() > 0.5) {
+			newNexts.push(n)
+			newPrevNexts.push(9)
+		} else {
+			newPrevNexts.push(n)
+		}
+	})
+	console.log(newNexts, newPrevNexts)
+}
+// createNexts()
+
+// assume sorted data

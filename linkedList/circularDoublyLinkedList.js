@@ -1,8 +1,7 @@
 const { DoublyLinkedList, Node } = require("./doublyLinkedList.js")
 
-class CircularDoublyLinkedList extends DoublyLinkedList {
+class CircularDoublyLinkedList {
 	constructor(vals) {
-		super(vals)
 		if (!vals.length) {
 			this.head = null
 			this.length = 0
@@ -11,6 +10,26 @@ class CircularDoublyLinkedList extends DoublyLinkedList {
 		this.head = refs[0]
 		this.head.prev = refs[1]
 		refs[1].next = this.head
+	}
+	_createNodes(vals) {
+		vals = vals.map(val => new Node(val))
+		vals.forEach((n, i) => {
+			n.prev = vals[i - 1] || null
+			n.next = vals[i + 1] || null
+		})
+		return [vals[0], vals[vals.length - 1]]
+	}
+	#traverse(startNode, direction, index) {
+		console.log("startNode", startNode, "direction", direction,"traverse", index)
+		let currNode = startNode
+		let count = 1
+		while (true) {
+			if (count === index) return currNode
+			if (currNode[direction] === startNode) break
+			currNode = currNode[direction]
+			count++
+		}
+		return null
 	}
 	#getEnd() {
 		return this.head.prev
@@ -23,7 +42,10 @@ class CircularDoublyLinkedList extends DoublyLinkedList {
 	}
 	_insertStart(val) {
 		const end = this.#getEnd()
-		super._insertStart(val)
+		const oldHead = this.head
+		this.head = new Node(val, null, oldHead)
+		oldHead.prev = this.head
+		this.length++
 		end.next = this.head
 		this.head.prev = end
 	}
@@ -34,19 +56,10 @@ class CircularDoublyLinkedList extends DoublyLinkedList {
 		this.length++
 	}
 	_insertMiddle(val, index) {
+		console.log("insert middle index", index)
 		const node = (index <= Math.floor(this.length / 2)) ?
-			this._traverse(this.head,
-				"next",
-				(node) => node === this.#getEnd(),
-				(acc, curr) => curr,
-				(node, i) => i === index
-			) :
-			this._traverse(this.#getEnd(),
-				"prev",
-				(node) => node === this.head,
-				(acc, curr) => curr,
-				(node, i) => i === this.length - index + 1
-			)
+			this.#traverse(this.head, "next", index) :
+			this.#traverse(this.#getEnd(), "prev", this.length - index + 1)
 		const newNode = new Node(val, node, node.next)
 		node.next = newNode
 		newNode.next.prev = newNode
@@ -69,64 +82,34 @@ class CircularDoublyLinkedList extends DoublyLinkedList {
 	}
 	_delStart() {
 		const deletedVal = this._delMiddle(1)
-		console.log("head in del end", this.head)
 		this.head = this.head.next
 		return deletedVal
 	}
 	_delMiddle(index) {
 		const node = (index <= Math.floor(this.length / 2)) ?
-			this._traverse(this.head,
-				"next",
-				(node) => node === this.#getEnd(),
-				(acc, curr) => curr,
-				(node, i) => i === index
-			) :
-			this._traverse(this.#getEnd(),
-				"prev",
-				(node) => node === this.head,
-				(acc, curr) => curr,
-				(node, i) => i === this.length - index + 1
-			)
+			this.#traverse(this.head, "next", index) :
+			this.#traverse(this.#getEnd(), "prev", this.length - index + 1)
 		node.prev.next = node.next
 		node.next.prev = node.prev
-		console.log("node", node)
 		this.length--
 		return node.val
 	}
-	_getByVal(val) {
-		if (this.length === 0) throw this._invalidValError
-		const node = this._traverse(this.head,
-			"next",
-			(node) => node === this.#getEnd(),
-			(acc, curr) => curr,
-			(node, i) => node.val === val
-		)
-		if (node) return node
-		throw this._invalidValError
-	}
-	_get(index) {
+	get(index) {
 		const node = (index <= Math.floor(this.length / 2)) ?
-			this._traverse(this.head,
-				"next",
-				(node) => node === this.#getEnd(),
-				(acc, curr) => curr,
-				(node, i) => i === index
-			) :
-			this._traverse(this.#getEnd(),
-				"prev",
-				(node) => node === this.head,
-				(acc, curr) => curr,
-				(node, i) => i === this.length - index + 1
-			)
+			this.#traverse(this.head, "next", index) :
+			this.#traverse(this.#getEnd(), "prev", this.length - index + 1)
 		if (node) return node.val
 		throw this._invalidValError
 	}
 	getAll() {
-		return this._traverse(this.head, "next",
-			(node) => node === this.#getEnd(),
-			(acc, curr) => [...acc, curr.val],
-			(node, i) => true, []
-		)
+		let currNode = this.head
+		const vals = []
+		while (true) {
+			vals.push(currNode.val)
+			if (currNode.next === this.#getEnd()) break
+			currNode = currNode.next
+		}
+		return null
 	}
 }
 
