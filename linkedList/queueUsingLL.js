@@ -7,7 +7,6 @@ class Queue {
 		this.#storage = ll
 	}
 	enqueue(val) {
-		console.log("storage head", this.#storage.head)
 		this.#storage.insert(val, this.#storage.length) // -1 without knowing length
 	}
 	dequeue() {

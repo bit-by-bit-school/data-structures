@@ -27,7 +27,6 @@ class CircularDoublyLinkedList {
 		return [vals[0], vals[vals.length - 1]]
 	}
 	#traverse(startNode, direction, index) {
-		console.log("startNode", startNode, "direction", direction,"traverse", index)
 		let currNode = startNode
 		let count = 1
 		while (true) {
@@ -63,7 +62,6 @@ class CircularDoublyLinkedList {
 		this.length++
 	}
 	_insertMiddle(val, index) {
-		console.log("insert middle index", index, this.length)
 		const node = (index <= Math.floor(this.length / 2)) ?
 			this.#traverse(this.head, "next", index) :
 			this.#traverse(this.#getEnd(), "prev", this.length - index + 1)

@@ -9,10 +9,12 @@ class Node {
 class SkipList {
 	#head
 	#end
-	constructor(vals) {
+	#NodeNotFound = new Error("Node not found")
+
+	constructor(vals, randomnessFactor) {
 		if (!vals.length) {
-			this.#head = null
-			this.#end = null
+			this.#end = new Node(Number.MAX_SAFE_INTEGER, null, null)
+			this.#head = new Node(Number.MIN_SAFE_INTEGER, null, [this.#end])
 			this.length = 0
 			return
 		}
@@ -20,7 +22,7 @@ class SkipList {
 		this._joinNodes(nodes)
 		this._createRefNodes(nodes)
 		this.length = nodes.length
-		this._createNexts()
+		this._createNexts(randomnessFactor)
 	}
 	_createNodes(vals) {
 		return vals.map(v => new Node(v))
@@ -37,7 +39,7 @@ class SkipList {
 		nodes[0].prev = this.#head
 		nodes[nodes.length - 1].nexts = [this.#end]
 	}
-	_createNexts() {
+	_createNexts(randomnessFactor) {
 		let currNode = this.#head
 		let nextNode = currNode.nexts[currNode.nexts.length - 1]
 		while (this.#head.nexts[this.#head.nexts.length - 1].nexts) {
@@ -47,7 +49,7 @@ class SkipList {
 				nextNode = currNode.nexts[currNode.nexts.length - 1]
 				continue
 			}
-			if (Math.random() > 0.5) { // no magic numbers p = 0.5 default pass to constructor
+			if (Math.random() > randomnessFactor) {
 				currNode.nexts.push(nextNode)
 				currNode = nextNode
 			}
@@ -81,7 +83,6 @@ class SkipList {
 		return [currNode, nodesToUpdate]
 	}
 	insert(val) {
-		if (!this.#head) throw new Error("Empty Linked List");
 		const [reqNode, nodesToUpdate] = this.findPlacementNodeForInsertion(val)
 		const newNode = new Node(val, reqNode, [])
 		this.updateNextsForInsertion(nodesToUpdate, newNode)
@@ -106,12 +107,10 @@ class SkipList {
 		while (currNode.nexts) {
 			if (currNode.val === val) return [currNode, nodesToUpdate]
 			if (currNode.nexts[0].val > val && !reqNode) {
-				console.log(1)
-				throw new Error("Node to be deleted not found")
+				throw this.#NodeNotFound
 			}
 			for (let i = currNode.nexts.length - 1; i >= 0; i--) {
 				const currNext = currNode.nexts[i]
-				console.log("currNode", currNode.val, "currNext", currNext.val)
 				if (currNext.val === val) {
 					if (!reqNode) reqNode = currNext
 					nodesToUpdate.push([currNode, i])
@@ -122,36 +121,12 @@ class SkipList {
 				}
 			}
 		}
-		if (!reqNode) throw new Error("Node to be deleted not found")
+		if (!reqNode) throw NodeNotFound
 	}
 	del(val) {
-		if (!this.#head) throw new Error("Empty Linked List");
 		const [node, nodesToUpdate] = this.findNodeToBeDeleted(val)
-		console.log("nodesToUpdate", nodesToUpdate)
 		this.updateNextsForDeletion(nodesToUpdate, node)
-
 		this.length--
-	}
-	get(val) {
-		if (!this.#head) throw new Error("Empty Linked List");
-		let currNode = this.#head
-		let reqNode = null
-		const predecessors = []
-		while (!reqNode) {
-			for (let i = currNode.nexts.length - 1; i >= 0; i--) {
-				if (currNode.nexts[i].val === val) {
-					reqNode = currNode.nexts[i]
-					break
-				}
-				if (currNode.nexts[i].val < val) {
-					predecessors.push(currNode.nexts[i])
-					currNode = currNode.nexts[i]
-					break
-				}
-			}
-			if (!reqNode) break
-		}
-		throw new Error("Invalid node val");
 	}
 	print() {
 		let currNode = this.#head
@@ -169,21 +144,10 @@ class SkipList {
 
 }
 
-const vals = [1, 2, 3, 4, 6, 7, 8]
-const sl = new SkipList(vals)
-sl.insert(5)
-console.log("before", sl.print())
-sl.del(5)
-console.log("after", sl.print())
-
-
 module.exports = { SkipList }
 
 // assume sorted data
 
-// update head and end to be sentinels instead of internal nodes
-
 // sometimes smaller value nodes are added before the larger value nodes in next. Fix that.
 
-// if multiple vals to be deleted macth, delete first one, and check everytime after reqNode has been found.
-// doesnt handle with duplicate values rn
+// doesnt handle with duplicate values
