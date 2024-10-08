@@ -7,93 +7,108 @@ class Node {
 }
 
 class DoublyLinkedList {
-	_invalidIndexError = new Error("Invalid index")
-	_invalidValError = new Error("Invalid node val")
-	_createNodes(vals) {
-		vals = vals.map(val => new Node(val))
-		vals.forEach((n, i) => {
-			n.prev = vals[i - 1] || null
-			n.next = vals[i + 1] || null
-		})
-		return [vals[0], vals[vals.length - 1]]
-	}
+	#invalidIndexError = new Error("Invalid index")
+	#invalidValError = new Error("Invalid node val")
+	#head
+	#end
 	constructor(vals) {
+		this.#createNodes(vals)
+		this.length = vals.length
+	}
+	#createNodes(vals) {
 		if (!vals.length) {
-			this.head = null
-			this.end = null
-			this.length = 0
+			this.#head = null
+			this.#end = null
 			return
 		}
-		this.length = vals.length
-		let refs = this._createNodes(vals)
-		this.head = refs[0]
-		this.end = refs[1]
+		const nodes = vals.map(val => new Node(val))
+		nodes.forEach((n, i) => {
+			n.prev = nodes[i - 1] || null
+			n.next = nodes[i + 1] || null
+		})
+		this.#head = nodes[0]
+		this.#end = nodes[nodes.length - 1]
 	}
-	#traverse(startNode, direction, index) {
+	#traverse(index) {
+		let startNode, direction, stopIndex
+		if (index <= Math.floor(this.length / 2)) {
+			startNode = this.#head
+			direction = "next"
+			stopIndex = index
+		} else {
+			startNode = this.#end
+			direction = "prev"
+			stopIndex = this.length - index + 1
+		}
 		let currNode = startNode
 		let count = 1
 		while (true) {
-			if (count === index) return currNode
+			if (count === stopIndex) return currNode
 			if (!currNode[direction]) break
 			currNode = currNode[direction]
 			count++
 		}
 		return null
 	}
+	#create(val, prev, next) {
+		const newNode = new Node(val, prev, next)
+		if (prev) prev.next = newNode
+		if (next) next.prev = newNode
+		return newNode
+	}
 	insert(val, index) {
-		if (index > this.length) throw this._invalidIndexError
-		if (index === 0) this._insertStart(val)
-		if (index === this.length) this._insertEnd(val)
-		else this._insertMiddle(val, index)
-	}
-	_insertMiddle(val, index) {
-		const node = (index <= Math.floor(this.length / 2)) ?
-			this.#traverse(this.head, "next", index) :
-			this.#traverse(this.end, "prev", this.length - index + 1)
-		const newNode = new Node(val, node, node.next)
-		node.next = newNode
-		newNode.next.prev = newNode
+		if (index > this.length) throw this.#invalidIndexError
+		if (index === 0) this.#insertStart(val)
+		if (index === this.length) this.#insertEnd(val)
+		else this.#insertMiddle(val, index)
 		this.length++
 	}
-	_insertStart(val) {
-		const oldHead = this.head
-		this.head = new Node(val, null, oldHead)
-		oldHead.prev = this.head
-		this.length++
+	#insertMiddle(val, index) {
+		const node = this.#traverse(index)
+		this.#create(val, node, node.next)
 	}
-	_insertEnd(val) {
-		const oldEnd = this.end
-		this.end = new Node(val, oldEnd, null)
-		oldEnd.next = this.end
-		this.length++
+	#insertStart(val) {
+		const newNode = this.#create(val, null, this.#head)
+		this.#head = newNode
+	}
+	#insertEnd(val) {
+		const newNode = this.#create(val, this.#end, null )
+		this.#end = newNode
+	}
+	#remove(prev, next) {
+		if (prev) prev.next = next
+		if (next) next.prev = prev
 	}
 	del(index) {
-		if (index > this.length || index === 0) throw this._invalidIndexError
-		if (index === this.length) this._delEnd()
-		else this._delMiddle(index)
+		if (index > this.length || index === 0) throw this.#invalidIndexError
+		if (index === 1) return this.#delStart()
+		if (index === this.length) return this.#delEnd()
+		else return this.#delMiddle(index)
 	}
-	_delEnd() {
-		this.end.prev.next = null
-		this.end = this.end.prev
+	#delStart() {
+		this.#remove(null, this.#head.next)
+		const deletedVal = this.#head.val
+		this.#head = this.#head.next
 		this.length--
 	}
-	_delMiddle(index) {
-		const node = (index <= Math.floor(this.length / 2)) ?
-			this.#traverse(this.head, "next", index) :
-			this.#traverse(this.end, "prev", this.length - index)
-		node.prev.next = node.next
-		node.next.prev = node.prev
+	#delEnd() {
+		const deletedVal = this.#end.val
+		this.#remove(this.#end.prev, null)
+		this.#end = this.#end.prev
 		this.length--
 	}
-	_get(index) {
-		const node = (index <= Math.floor(this.length / 2)) ?
-			this.#traverse(this.head, "next", index) :
-			this.#traverse(this.end, "prev", this.length - index + 1)
+	#delMiddle(index) {
+		const node = this.#traverse(index)
+		this.#remove(node.prev, node,next)
+		this.length--
+	}
+	get(index) {
+		const node = this.#traverse(index)
 		if (node) return node.val
-		throw this._invalidValError
+		throw this.#invalidValError
 	}
 	getAll() {
-		let currNode = this.head
+		let currNode = this.#head
 		const vals = []
 		while (true) {
 			vals.push(currNode.val)

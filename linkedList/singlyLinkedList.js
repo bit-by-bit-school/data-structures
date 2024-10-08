@@ -7,9 +7,13 @@ class Node {
 
 class SinglyLinkedList {
 	#invalidIndexError = new Error("Invalid index")
+	#invalidValError = new Error("Invalid val")
 	#head
 	#end
 	constructor(vals) {
+		this.#createNodes(vals)
+	}
+	#createNodes(vals) {
 		if (!vals.length) {
 			this.#head = null
 			this.#end = null
@@ -22,44 +26,51 @@ class SinglyLinkedList {
 				return new Node(curr, acc)
 			}, this.#end)
 		this.length = vals.length
-
 	}
-	#traverse(index) {
+	#getByVal(val) {
+		let currNode = this.#head
+		while (true) {
+			if (currNode.val === val) return currNode
+			if (currNode.next) currNode = currNode.next
+			else return null
+		}
+	}
+	#getByIndex(index) {
+		if (index > this.length) return null
 		let currNode = this.#head
 		let count = 1
 		while (true) {
 			if (count === index) return currNode
-			if (!currNode.next) break
-			currNode = currNode.next
+			if (currNode.next) currNode = currNode.next
+			else return null
 			count++
 		}
-		return null
 	}
-	insert(val, index) {
-		if (index > this.length) throw this.#invalidIndexError
+	#create(val, index) {
 		if (index === 0) {
 			this.#head = new Node(val, this.#head)
-			this.length++
 			return
 		}
 		if (index === this.length) {
 			this.#end.next = new Node(val, null)
 			this.#end = this.#end.next
-			this.length++
 			return
 		}
-		const node = this.#traverse(index)
+		const node = this.#getByIndex(index)
 		node.next = new Node(val, node.next)
+	}
+	insert(val, index) {
+		if (index > this.length) throw this.#invalidIndexError
+		this.#create(val, index)
 		this.length++
 	}
-	del(index) {
-		if (index > this.length) throw this.#invalidIndexError
+	#remove(index) {
 		if (index - 1 === 0) {
 			this.#head = this.#head.next
 			this.length--
 			return
 		}
-		const node = this.#traverse(index - 1)
+		const node = this.#getByIndex(index - 1)
 		if (index === this.length) {
 			this.#end = node
 			node.next = null
@@ -67,12 +78,11 @@ class SinglyLinkedList {
 			return
 		}
 		node.next = node.next.next
-		this.length--
 	}
-	get(index) {
-		const node = this.#traverse(index)
-		if (node) return node.val
-		throw this.#invalidIndexError
+	del(index) {
+		if (index > this.length) throw this.#invalidIndexError
+		this.#remove(index)
+		this.length--
 	}
 	getAll() {
 		let currNode = this.#head
@@ -83,6 +93,11 @@ class SinglyLinkedList {
 			if (!currNode) break
 		}
 		return vals
+	}
+	get(index) {
+		const node = this.#getByIndex(index)
+		if (!node) throw this.#invalidIndexError
+		return node.val
 	}
 	reverse() {
 		let prevHead = this.#head

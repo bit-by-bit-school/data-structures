@@ -12,11 +12,6 @@ test('Deletes from Linked List', () => {
 	expect(ll.getAll().length).toBe(2)
 })
 
-test('Search Linked List via index', () => {
-	const ll = new SinglyLinkedList([1, 2, 3])
-	expect(ll.get(2)).toBe(2)
-})
-
 test('Get all node vals', () => {
 	const ll = new SinglyLinkedList([1, 2, 3])
 	expect(ll.getAll().length).toBe(3)

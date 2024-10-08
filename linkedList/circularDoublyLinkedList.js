@@ -7,111 +7,117 @@ class Node {
 }
 
 class CircularDoublyLinkedList {
+	#invalidIndexError = new Error("Invalid index")
+	#invalidValError = new Error("Invalid node val")
+	#head
+	#end
 	constructor(vals) {
-		if (!vals.length) {
-			this.head = null
-			this.length = 0
-		}
-		let refs = this._createNodes(vals)
-		this.head = refs[0]
-		this.head.prev = refs[1]
-		refs[1].next = this.head
+		this.#createNodes(vals)
 		this.length = vals.length
 	}
-	_createNodes(vals) {
-		vals = vals.map(val => new Node(val))
-		vals.forEach((n, i) => {
-			n.prev = vals[i - 1] || null
-			n.next = vals[i + 1] || null
+	#createNodes(vals) {
+		if (!vals.length) {
+			this.#head = null
+			this.#end = null
+			return
+		}
+		const nodes = vals.map(val => new Node(val))
+		nodes.forEach((n, i) => {
+			n.prev = nodes[i - 1] || null
+			n.next = nodes[i + 1] || null
 		})
-		return [vals[0], vals[vals.length - 1]]
+		this.#head = nodes[0]
+		this.#head.prev = nodes[nodes.length - 1]
+		this.#end = nodes[nodes.length - 1]
+		this.#end.next = this.#head
 	}
-	#traverse(startNode, direction, index) {
+	#traverse(index) {
+		let startNode, direction, stopIndex
+		if (index <= Math.floor(this.length / 2)) {
+			startNode = this.#head
+			direction = "next"
+			stopIndex = index
+		} else {
+			startNode = this.#end
+			direction = "prev"
+			stopIndex = this.length - index + 1
+		}
 		let currNode = startNode
 		let count = 1
 		while (true) {
-			if (count === index) return currNode
+			if (count === stopIndex) return currNode
 			if (currNode[direction] === startNode) break
 			currNode = currNode[direction]
 			count++
 		}
 		return null
 	}
-	#getEnd() {
-		return this.head.prev
+	#create(val, prev, next) {
+		const newNode = new Node(val, prev, next)
+		if (prev) prev.next = newNode
+		if (next) next.prev = newNode
+		return newNode
 	}
 	insert(val, index) {
-		if (index > this.length) throw this._invalidIndexError
-		if (index === 0) return this._insertStart(val)
-		if (index === this.length) return this._insertEnd(val)
-		else return this._insertMiddle(val, index)
-	}
-	_insertStart(val) {
-		const end = this.#getEnd()
-		const oldHead = this.head
-		this.head = new Node(val, null, oldHead)
-		oldHead.prev = this.head
-		this.length++
-		end.next = this.head
-		this.head.prev = end
-	}
-	_insertEnd(val) {
-		const node = new Node(val, this.#getEnd(), this.head)
-		this.#getEnd().next = node
-		this.head.prev = node
+		if (index > this.length) throw this.#invalidIndexError
+		if (index === 0) this.#insertStart(val)
+		if (index === this.length) this.#insertEnd(val)
+		else this.#insertMiddle(val, index)
 		this.length++
 	}
-	_insertMiddle(val, index) {
-		const node = (index <= Math.floor(this.length / 2)) ?
-			this.#traverse(this.head, "next", index) :
-			this.#traverse(this.#getEnd(), "prev", this.length - index + 1)
-		const newNode = new Node(val, node, node.next)
-		node.next = newNode
-		newNode.next.prev = newNode
-		this.length++
+	#insertStart(val) {
+		const newNode = this.#create(val, this.#end, this.#head)
+		this.#head = newNode
+	}
+	#insertEnd(val) {
+		const newNode = this.#create(val, this.#end, this.#head)
+		this.#end = newNode
+	}
+	#insertMiddle(val, index) {
+		const node = this.#traverse(index)
+		this.#create(val, node, node.next)
 	}
 	del(index) {
-		if (index > this.length || index === 0) throw this._invalidIndexError
-		if (index === 1) return this._delStart()
-		if (index === this.length) return this._delEnd()
-		else return this._delMiddle(index)
+		if (index > this.length || index === 0) throw this.#invalidIndexError
+		if (index === 1) return this.#delStart()
+		if (index === this.length) return this.#delEnd()
+		else return this.#delMiddle(index)
 	}
-	_delEnd() {
-		const end = this.#getEnd()
-		const prev = end.prev
-		const next = end.next
-		prev.next = next
-		next.prev = prev
+	#remove(prev, next) {
+		if (prev) prev.next = next
+		if (next) next.prev = prev
+	}
+	#delEnd() {
+		const deletedVal = this.#end.val
+		this.#remove(this.#end.prev, this.#head)
+		this.#end = this.#end.prev
 		this.length--
-		return end.val
-	}
-	_delStart() {
-		const deletedVal = this._delMiddle(1)
-		this.head = this.head.next
 		return deletedVal
 	}
-	_delMiddle(index) {
-		const node = (index <= Math.floor(this.length / 2)) ?
-			this.#traverse(this.head, "next", index) :
-			this.#traverse(this.#getEnd(), "prev", this.length - index + 1)
-		node.prev.next = node.next
-		node.next.prev = node.prev
+	#delStart() {
+		this.#remove(this.#end, this.#head.next)
+		const deletedVal = this.#head.val
+		this.#head = this.#head.next
+		this.length--
+		return deletedVal
+	}
+	#delMiddle(index) {
+		const node = this.#traverse(index)
+		this.#remove(node.prev, node.next)
 		this.length--
 		return node.val
 	}
 	get(index) {
-		const node = (index <= Math.floor(this.length / 2)) ?
-			this.#traverse(this.head, "next", index) :
-			this.#traverse(this.#getEnd(), "prev", this.length - index + 1)
+		const node = this.#traverse(index)
 		if (node) return node.val
-		throw this._invalidValError
+		throw this.#invalidValError
 	}
 	getAll() {
-		let currNode = this.head
+		let currNode = this.#head
 		const vals = []
 		while (true) {
 			vals.push(currNode.val)
-			if (currNode.next === this.head) break
+			if (currNode.next === this.#head) break
 			currNode = currNode.next
 		}
 		return vals
