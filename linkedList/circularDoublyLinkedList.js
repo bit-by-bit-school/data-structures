@@ -74,8 +74,8 @@ class CircularDoublyLinkedList {
 		this.#end = newNode
 	}
 	#insertMiddle(val, index) {
-		const node = this.#traverse(index)
-		this.#create(val, node, node.next)
+		const prev = this.#traverse(index)
+		this.#create(val, prev, prev.next)
 	}
 	del(index) {
 		if (index > this.length || index === 0) throw this.#invalidIndexError

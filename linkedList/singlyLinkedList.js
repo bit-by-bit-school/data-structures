@@ -35,7 +35,7 @@ class SinglyLinkedList {
 			else return null
 		}
 	}
-	#getByIndex(index) {
+	#traverse(index) {
 		if (index > this.length) return null
 		let currNode = this.#head
 		let count = 1
@@ -46,43 +46,61 @@ class SinglyLinkedList {
 			count++
 		}
 	}
-	#create(val, index) {
-		if (index === 0) {
-			this.#head = new Node(val, this.#head)
-			return
-		}
-		if (index === this.length) {
-			this.#end.next = new Node(val, null)
-			this.#end = this.#end.next
-			return
-		}
-		const node = this.#getByIndex(index)
-		node.next = new Node(val, node.next)
+	#create(val, prev, next) {
+		const newNode = new Node(val, next)
+		if (prev) prev.next = newNode
+		return newNode
 	}
 	insert(val, index) {
 		if (index > this.length) throw this.#invalidIndexError
-		this.#create(val, index)
+		if (index === 0) return this.#insertStart(val)
+		if (index === this.length) return this.#insertEnd(val, index)
+		this.#insertMiddle(val, index)
+	}
+	#insertStart(val) {
+		const newNode = this.#create(val, null, this.#head)
+		this.#head = newNode
 		this.length++
 	}
-	#remove(index) {
-		if (index - 1 === 0) {
-			this.#head = this.#head.next
-			this.length--
-			return
-		}
-		const node = this.#getByIndex(index - 1)
-		if (index === this.length) {
-			this.#end = node
-			node.next = null
-			this.length--
-			return
-		}
-		node.next = node.next.next
+	#insertMiddle(val, index) {
+		const prev = this.#traverse(index)
+		this.#create(val, prev, prev.next)
+		this.length++
+	}
+	#insertEnd(val) {
+		const newNode = this.#create(val, this.#end, null)
+		this.#end = newNode
+		this.length++
+	}
+	#remove(prev, next) {
+		if (prev) prev.next = next
 	}
 	del(index) {
 		if (index > this.length) throw this.#invalidIndexError
-		this.#remove(index)
+		if (index === 1) return this.#delStart()
+		if (index === this.length) return this.#delEnd()
+		this.#delMiddle(index)
 		this.length--
+	}
+	#delStart() {
+		this.#remove(null, this.#head.next)
+		const deletedVal = this.#head.val
+		this.#head = this.#head.next
+		this.length--
+		return deletedVal
+	}
+	#delMiddle(index) {
+		const node = this.#traverse(index - 1)
+		this.#remove(node, node.next.next)
+		this.length--
+		return node.val
+	}
+	#delEnd() {
+		const deletedVal = this.#end.val
+		this.#remove(this.#end.prev, null)
+		this.#end = this.#end.prev
+		this.length--
+		return deletedVal
 	}
 	getAll() {
 		let currNode = this.#head
@@ -93,9 +111,9 @@ class SinglyLinkedList {
 			if (!currNode) break
 		}
 		return vals
-	}
+	} // use generator to implement an iterator for getAll
 	get(index) {
-		const node = this.#getByIndex(index)
+		const node = this.#traverse(index)
 		if (!node) throw this.#invalidIndexError
 		return node.val
 	}
