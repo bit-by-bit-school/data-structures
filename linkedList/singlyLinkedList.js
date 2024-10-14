@@ -111,7 +111,7 @@ class SinglyLinkedList {
 			if (!currNode) break
 		}
 		return vals
-	} // use generator to implement an iterator for getAll
+	}
 	get(index) {
 		const node = this.#traverse(index)
 		if (!node) throw this.#invalidIndexError
