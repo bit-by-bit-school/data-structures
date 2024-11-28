@@ -51,6 +51,39 @@ class BinarySearchTree {
       }
     }
   }
+
+  delete(value) {
+    this.root = this.deleteNode(this.root, value);
+  }
+  deleteNode(node, value) {
+    // the tree is empty
+    if (node == null) return null;
+
+    if (value < node.value) {
+      node.left = this.deleteNode(node.left, value); // go left
+    } else if (value > node.value) {
+      node.right = this.deleteNode(node.right, value); //go right
+    } else {
+      // leaf node
+      if (!node.left && !node.right) {
+        return null;
+      }
+      // one child node
+      if (!node.left) return node.right;
+      if (!node.right) return node.left;
+
+      // two child nodes
+      node.value = this.findMin(node.right);
+      node.right = this.deleteNode(node.right, node.value);
+    }
+    return node;
+  }
+  findMin(node) {
+    while (node.left != null) {
+      node = node.left;
+    }
+    return node.value;
+  }
 }
 
 const bst = new BinarySearchTree();
@@ -62,5 +95,6 @@ bst.insert(3);
 bst.insert(7);
 
 console.log(bst);
-console.log("Search for 7:", bst.find(7));
-console.log("Search for 20:", bst.find(20));
+console.log(bst.findMin(bst.root));
+// console.log("Search for 7:", bst.find(7));
+// console.log("Search for 20:", bst.find(20));
