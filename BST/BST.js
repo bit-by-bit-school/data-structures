@@ -73,7 +73,7 @@ class BinarySearchTree {
         node = node.left; // one child node
       } else {
         // two child nodes
-        node.value = this.findMin(node.right);
+        node.value = this.findMin(node.right).value;
         node.right = this.deleteNode(node.right, node.value);
       }
     }
@@ -84,29 +84,34 @@ class BinarySearchTree {
     while (node.left != null) {
       node = node.left;
     }
-    return node.value;
+    return node;
   }
 
-  iterator(value) {
-    const node = this.find(value);
-    if (!node) return null; // value is not in the tree
+  iterator() {
+    this.stack = [];
 
-    // value is in right subtree
-    if (node.right) return this.findMin(node.right);
-
-    // if no right subtree, find the lowest ancestor for which
-    // value is in left subtree
-    let currentNode = this.root;
-    let successor = null;
-    while (currentNode) {
-      if (value < currentNode.value) {
-        successor = currentNode.value;
-        currentNode = currentNode.left;
-      } else if (value > currentNode.value) {
-        currentNode = currentNode.right;
-      } else break; // found the value
+    let current = this.root;
+    while (current) {
+      this.stack.push(current);
+      current = current.left;
     }
-    return successor ? successor.value : null;
+
+    return {
+      next: () => {
+        // using arrow function will have the same 'this' context as iterator
+        const currentNode = this.stack.pop();
+        const nextValue = currentNode.value;
+
+        if (currentNode.right) {
+          let tempNode = currentNode.right;
+          while (tempNode) {
+            this.stack.push(tempNode);
+            tempNode = tempNode.left;
+          }
+        }
+        return nextValue;
+      },
+    };
   }
 }
 
@@ -121,7 +126,11 @@ bst.insert(7);
 // console.log(bst);
 // console.log(bst.findMin(bst.root));
 // console.log(bst.insert(3));
-console.log(bst.delete(3));
-console.log(bst.root);
+// console.log(bst.delete(3));
+// console.log(bst.root);
 // console.log("Search for 7:", bst.find(7));
 // console.log("Search for 20:", bst.find(20));
+const iter = bst.iterator();
+console.log(iter.next());
+console.log(iter.next());
+console.log(iter.next());
