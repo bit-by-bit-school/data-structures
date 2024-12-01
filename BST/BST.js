@@ -29,26 +29,20 @@ class BinarySearchTree {
   insert(value) {
     const newNode = new Node(value);
 
-    if (this.root == null) {
+    if (this.root === null) {
       this.root = newNode;
-      return;
+    } else {
+      this.insertNode(this.root, newNode);
     }
-
-    let currentNode = this.root;
-    while (true) {
-      if (value < currentNode.value) {
-        if (!currentNode.left) {
-          currentNode.left = newNode;
-          return;
-        }
-        currentNode = currentNode.left;
-      } else {
-        if (!currentNode.right) {
-          currentNode.right = newNode;
-          return;
-        }
-        currentNode = currentNode.right;
-      }
+  }
+  // helper function
+  insertNode(node, newNode) {
+    if (newNode.value < node.value) {
+      if (!node.left) node.left = newNode;
+      else this.insertNode(node.left, newNode);
+    } else {
+      if (!node.right) node.right = newNode;
+      else this.insertNode(node.right, newNode);
     }
   }
 
@@ -154,5 +148,5 @@ bst.insert(7);
 // console.log(iter.next());
 
 // console.log(bst.findMax(bst.root));
-// console.log(Array.from(bst));
-console.log(bst.findRange(6, 11));
+console.log(Array.from(bst));
+// console.log(bst.findRange(6, 11));
