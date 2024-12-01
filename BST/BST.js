@@ -121,6 +121,16 @@ class BinarySearchTree {
       },
     };
   }
+
+  findRange(min, max) {
+    const ranges = [];
+    for (const value of this) {
+      if (value >= min && value <= max) {
+        ranges.push(value);
+      }
+    }
+    return ranges;
+  }
 }
 
 const bst = new BinarySearchTree();
@@ -145,3 +155,4 @@ bst.insert(7);
 
 // console.log(bst.findMax(bst.root));
 // console.log(Array.from(bst));
+console.log(bst.findRange(6, 11));
