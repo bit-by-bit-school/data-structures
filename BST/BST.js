@@ -73,7 +73,7 @@ class BinarySearchTree {
         node = node.left; // one child node
       } else {
         // two child nodes
-        node.value = this.findMin(node.right).value;
+        node.value = this.findMin(node.right);
         node.right = this.deleteNode(node.right, node.value);
       }
     }
@@ -84,10 +84,17 @@ class BinarySearchTree {
     while (node.left != null) {
       node = node.left;
     }
-    return node;
+    return node.value;
   }
 
-  iterator() {
+  findMax(node) {
+    while (node.right !== null) {
+      node = node.right;
+    }
+    return node.value;
+  }
+
+  [Symbol.iterator]() {
     this.stack = [];
 
     let current = this.root;
@@ -97,8 +104,9 @@ class BinarySearchTree {
     }
 
     return {
-      next: () => {
-        // using arrow function will have the same 'this' context as iterator
+      stack: this.stack,
+      next() {
+        if (this.stack.length === 0) return { done: true };
         const currentNode = this.stack.pop();
         const nextValue = currentNode.value;
 
@@ -109,7 +117,7 @@ class BinarySearchTree {
             tempNode = tempNode.left;
           }
         }
-        return nextValue;
+        return { value: nextValue, done: false };
       },
     };
   }
@@ -130,7 +138,10 @@ bst.insert(7);
 // console.log(bst.root);
 // console.log("Search for 7:", bst.find(7));
 // console.log("Search for 20:", bst.find(20));
-const iter = bst.iterator();
-console.log(iter.next());
-console.log(iter.next());
-console.log(iter.next());
+// const iter = bst.iterator();
+// console.log(iter.next());
+// console.log(iter.next());
+// console.log(iter.next());
+
+// console.log(bst.findMax(bst.root));
+// console.log(Array.from(bst));
