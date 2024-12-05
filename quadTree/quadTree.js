@@ -16,90 +16,63 @@ class QuadTree {
   constructor(topLeft, bottomRight) {
     this.topLeft = topLeft;
     this.bottomRight = bottomRight;
-    this.node = null;
-    this.topLeftTree = null;
-    this.topRightTree = null;
-    this.bottomLeftTree = null;
-    this.bottomRightTree = null;
+    this.subTrees = {
+      topLeft: null,
+      bottomLeft: null,
+      topRight: null,
+      bottomRight: null,
+    };
+  }
+
+  getQuadrants(node) {
+    const midX = (this.topLeft.x + this.bottomRight.x) / 2;
+    const midY = (this.topLeft.y + this.bottomRight.y) / 2;
+
+    if (node.pos.x <= midX) {
+      if (node.pos.y <= midY) return "topLeft";
+      return "bottomLeft";
+    }
+    if (node.pos.y <= midY) return "topRight";
+    return "bottomRight";
+  }
+
+  getBoundaryForQuadrant(quadrant) {
+    const midX = (this.topLeft.x + this.bottomRight.x) / 2;
+    const midY = (this.topLeft.y + this.bottomRight.y) / 2;
+
+    switch (quadrant) {
+      case "topLeft":
+        return [this.topLeft, new Point(midX, midY)];
+      case "bottomLeft":
+        return [
+          new Point(this.topLeft.x, midY),
+          new Point(midX, this.bottomRight.y),
+        ];
+      case "topRight":
+        return [
+          new Point(midX, this.topLeft.y),
+          new Point(this.bottomRight.x, midY),
+        ];
+      case "bottomRight":
+        return [new Point(midX, midY), this.bottomRight];
+    }
   }
 
   insert(node) {
-    if (node == null) return;
+    if (node == null || !this.inBoundary(node.pos)) return;
 
-    // if the node is outside the tree region
-    if (!this.inBoundary(node.pos)) return;
+    const quadrant = this.getQuadrants(node);
 
-    // if the region has unit area, it cannot be subdivided
-    if (
-      Math.abs(this.topLeft.x - this.bottomRight.x) <= 1 &&
-      Math.abs(this.topLeft.y - this.bottomRight.y) <= 1
-    ) {
-      if (this.node == null) {
-        this.node = node;
-      }
-      return;
-    }
-
-    // if the point is on the left half
-    if ((this.topLeft.x + this.bottomRight.x) / 2 >= node.pos.x) {
-      // if the point is on the top half
-      if ((this.topLeft.y + this.bottomRight.y) / 2 >= node.pos.y) {
-        if (this.topLeftTree == null) {
-          // the mid point of previous tree becomes bottom right point for new tree
-          this.topLeftTree = new QuadTree(
-            this.topLeft,
-            new Point(
-              (this.topLeft.x + this.bottomRight.x) / 2,
-              (this.topLeft.y + this.bottomRight.y) / 2
-            )
-          );
-        }
-        this.topLeftTree.insert(node);
-      } else {
-        // if the point is on bottom half
-        if (this.bottomLeftTree == null) {
-          this.bottomLeftTree = new QuadTree(
-            new Point(
-              this.topLeft.x,
-              (this.topLeft.y + this.bottomRight.y) / 2
-            ),
-            new Point(
-              (this.topLeft.x + this.bottomRight.x) / 2,
-              this.bottomRight.y
-            )
-          );
-        }
-        this.bottomLeftTree.insert(node);
-      }
+    if (this.subTrees[quadrant] == null) {
+      this.subTrees[quadrant] = new Node(node.pos, node.value);
+    } else if (this.subTrees[quadrant] instanceof Node) {
+      const existingNode = this.subTrees[quadrant];
+      const [topLeft, bottomRight] = this.getBoundaryForQuadrant(quadrant);
+      this.subTrees[quadrant] = new QuadTree(topLeft, bottomRight);
+      this.subTrees[quadrant].insert(existingNode);
+      this.subTrees[quadrant].insert(node);
     } else {
-      // if the point is in the top right tree
-      if ((this.topLeft.y + this.bottomRight.y) / 2 >= node.pos.y) {
-        if (this.topRightTree == null) {
-          this.topRightTree = new QuadTree(
-            new Point(
-              (this.topLeft.x + this.bottomRight.x) / 2,
-              this.topLeft.y
-            ),
-            new Point(
-              this.bottomRight.x,
-              (this.topLeft.y + this.bottomRight.y) / 2
-            )
-          );
-        }
-        this.topRightTree.insert(node);
-      } else {
-        // if the point is in bottom right tree
-        if (this.bottomRightTree == null) {
-          this.bottomRightTree = new QuadTree(
-            new Point(
-              (this.topLeft.x + this.bottomRight.x) / 2,
-              (this.topLeft.y + this.bottomRight.y) / 2
-            ),
-            this.bottomRight
-          );
-        }
-        this.bottomRightTree.insert(node);
-      }
+      this.subTrees[quadrant].insert(node);
     }
   }
 
