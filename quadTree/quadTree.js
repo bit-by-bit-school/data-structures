@@ -24,7 +24,34 @@ class QuadTree {
     };
   }
 
-  getQuadrants(node) {
+  insert(node) {
+    if (node == null || !this.inBoundary(node.pos)) return;
+
+    const quadrant = this.getQuadrant(node);
+
+    if (this.subTrees[quadrant] == null) {
+      this.subTrees[quadrant] = new Node(node.pos, node.value);
+    } else if (this.subTrees[quadrant] instanceof Node) {
+      const existingNode = this.subTrees[quadrant];
+      const [topLeft, bottomRight] = this.getBoundaryForQuadrant(quadrant);
+      this.subTrees[quadrant] = new QuadTree(topLeft, bottomRight);
+      this.subTrees[quadrant].insert(existingNode);
+      this.subTrees[quadrant].insert(node);
+    } else {
+      this.subTrees[quadrant].insert(node);
+    }
+  }
+
+  inBoundary(point) {
+    return (
+      point.x >= this.topLeft.x &&
+      point.x <= this.bottomRight.x &&
+      point.y >= this.topLeft.y &&
+      point.y <= this.bottomRight.y
+    );
+  }
+
+  getQuadrant(node) {
     const midX = (this.topLeft.x + this.bottomRight.x) / 2;
     const midY = (this.topLeft.y + this.bottomRight.y) / 2;
 
@@ -58,71 +85,39 @@ class QuadTree {
     }
   }
 
-  insert(node) {
-    if (node == null || !this.inBoundary(node.pos)) return;
-
-    const quadrant = this.getQuadrants(node);
-
-    if (this.subTrees[quadrant] == null) {
-      this.subTrees[quadrant] = new Node(node.pos, node.value);
-    } else if (this.subTrees[quadrant] instanceof Node) {
-      const existingNode = this.subTrees[quadrant];
-      const [topLeft, bottomRight] = this.getBoundaryForQuadrant(quadrant);
-      this.subTrees[quadrant] = new QuadTree(topLeft, bottomRight);
-      this.subTrees[quadrant].insert(existingNode);
-      this.subTrees[quadrant].insert(node);
-    } else {
-      this.subTrees[quadrant].insert(node);
-    }
-  }
-
-  inBoundary(point) {
-    return (
-      point.x >= this.topLeft.x &&
-      point.x <= this.bottomRight.x &&
-      point.y >= this.topLeft.y &&
-      point.y <= this.bottomRight.y
-    );
-  }
-
   getChildren() {
-    const children = [];
     const quadrants = ["topLeft", "bottomLeft", "topRight", "bottomRight"];
 
-    for (const quadrant of quadrants) {
-      const child = this.subTrees[quadrant]; // here node is a point, whose children I'm supposed to find
-      if (child != null) {
-        children.push(child);
-      }
-    }
-    return children;
+    return quadrants
+      .map((quadrant) => this.subTrees[quadrant])
+      .filter((child) => child != null);
   }
 
   // eager algo
-  // [Symbol.iterator]() {
-  //   const queue = [];
+  [Symbol.iterator]() {
+    const queue = [];
 
-  //   const populateQueue = function (tree) {
-  //     const children = tree.getChildren();
+    const populateQueue = function (tree) {
+      const children = tree.getChildren();
 
-  //     for (const child of children) {
-  //       if (child instanceof Node) {
-  //         queue.push(child.value);
-  //       } else if (child instanceof QuadTree) {
-  //         populateQueue(child);
-  //       }
-  //     }
-  //   };
-  //   populateQueue(this); // calculates all values beforehand
+      for (const child of children) {
+        if (child instanceof Node) {
+          queue.push(child.value);
+        } else if (child instanceof QuadTree) {
+          populateQueue(child);
+        }
+      }
+    };
+    populateQueue(this); // calculates all values beforehand
 
-  //   return {
-  //     next: () => {
-  //       if (queue.length === 0) return { done: true };
+    return {
+      next: () => {
+        if (queue.length === 0) return { done: true };
 
-  //       return { value: queue.shift(), done: false };
-  //     },
-  //   };
-  // }
+        return { value: queue.shift(), done: false };
+      },
+    };
+  }
 
   // lazy algo
   [Symbol.iterator]() {
