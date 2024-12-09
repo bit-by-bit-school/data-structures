@@ -16,6 +16,10 @@ class QuadTree {
   constructor(topLeft, bottomRight) {
     this.topLeft = topLeft;
     this.bottomRight = bottomRight;
+    this.midPoint = new Point(
+      (this.topLeft.x + this.bottomRight.x) / 2,
+      (this.topLeft.y + this.bottomRight.y) / 2
+    );
     this.subTrees = {
       topLeft: null,
       bottomLeft: null,
@@ -52,36 +56,30 @@ class QuadTree {
   }
 
   getQuadrant(node) {
-    const midX = (this.topLeft.x + this.bottomRight.x) / 2;
-    const midY = (this.topLeft.y + this.bottomRight.y) / 2;
-
-    if (node.pos.x <= midX) {
-      if (node.pos.y <= midY) return "topLeft";
+    if (node.pos.x <= this.midPoint.x) {
+      if (node.pos.y <= this.midPoint.y) return "topLeft";
       return "bottomLeft";
     }
-    if (node.pos.y <= midY) return "topRight";
+    if (node.pos.y <= this.midPoint.y) return "topRight";
     return "bottomRight";
   }
 
   getBoundaryForQuadrant(quadrant) {
-    const midX = (this.topLeft.x + this.bottomRight.x) / 2;
-    const midY = (this.topLeft.y + this.bottomRight.y) / 2;
-
     switch (quadrant) {
       case "topLeft":
-        return [this.topLeft, new Point(midX, midY)];
+        return [this.topLeft, this.midPoint];
       case "bottomLeft":
         return [
-          new Point(this.topLeft.x, midY),
-          new Point(midX, this.bottomRight.y),
+          new Point(this.topLeft.x, this.midPoint.y),
+          new Point(this.midPoint.x, this.bottomRight.y),
         ];
       case "topRight":
         return [
-          new Point(midX, this.topLeft.y),
-          new Point(this.bottomRight.x, midY),
+          new Point(this.midPoint.x, this.topLeft.y),
+          new Point(this.bottomRight.x, this.midPoint.y),
         ];
       case "bottomRight":
-        return [new Point(midX, midY), this.bottomRight];
+        return [this.midPoint, this.bottomRight];
     }
   }
 
@@ -132,7 +130,7 @@ class QuadTree {
             const children = current.getChildren();
 
             for (const child of children) {
-              queue.push(child);
+              queue.unshift(child);
             }
           } else if (current instanceof Node) {
             return { value: current.value, done: false };
