@@ -168,3 +168,9 @@ quad.insert(c);
 quad.insert(d);
 // const quad1 = new QuadTree(new Point(0, 0), new Point(4, 4));
 console.log([...quad]);
+
+module.exports = {
+  Point,
+  Node,
+  QuadTree,
+};
