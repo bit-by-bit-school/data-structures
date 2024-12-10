@@ -26,10 +26,14 @@ class QuadTree {
       topRight: null,
       bottomRight: null,
     };
+    this.mass = 0;
+    this.centerOfMass = new Point(0, 0);
   }
 
   insert(node) {
     if (node == null || !this.inBoundary(node.pos)) return;
+
+    this.updateMassAndCoM(node);
 
     const quadrant = this.getQuadrant(node);
 
@@ -53,6 +57,17 @@ class QuadTree {
       point.y >= this.topLeft.y &&
       point.y <= this.bottomRight.y
     );
+  }
+
+  updateMassAndCoM(node) {
+    const totalMass = this.mass + node.value.mass;
+    this.centerOfMass = new Point(
+      (this.mass * this.centerOfMass.x + node.value.mass * node.pos.x) /
+        totalMass,
+      (this.mass * this.centerOfMass.y + node.value.mass * node.pos.y) /
+        totalMass
+    );
+    this.mass = totalMass;
   }
 
   getQuadrant(node) {
