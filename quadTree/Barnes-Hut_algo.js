@@ -27,9 +27,14 @@ function buildQuadTree() {
     if (particle.x < minX) minX = particle.x;
     if (particle.y < minY) minY = particle.y;
   }
-  // console.log(maxX, maxY, minX, minY);
-  const root = new QuadTree(new Point(minX, minY), new Point(maxX, maxY));
-  // console.log(root);
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const side = Math.max(width, height);
+
+  const root = new QuadTree(
+    new Point(minX, minY),
+    new Point(minX + side, minY + side)
+  );
 
   particles.forEach((particle) => {
     const newNode = new Node(new Point(particle.x, particle.y), {
@@ -37,30 +42,25 @@ function buildQuadTree() {
     });
     root.insert(newNode);
   });
-  // console.log(particles);
 
   return root;
 }
 
 function computeForce(tree, particle, theta) {
-  const maxForce = 5;
+  const maxForce = 1;
   const dx = tree.centerOfMass.x - particle.x;
   const dy = tree.centerOfMass.y - particle.y;
-  // console.log(dx, dy);
 
   const d = Math.sqrt(dx ** 2 + dy ** 2);
   const s = tree.bottomRight.x - tree.topLeft.x;
-  // console.log(s / d);
 
   if (tree.isLeaf() || s / d < theta) {
     let F = (G * tree.mass * particle.mass) / d ** 2;
-    // console.log(F);
     if (F > maxForce) F = maxForce;
 
     particle.ax += (F / particle.mass) * (dx / d);
     particle.ay += (F / particle.mass) * (dy / d);
   } else {
-    // console.log("hi");
     const children = tree.getChildren();
     children
       .filter((child) => child instanceof QuadTree)
