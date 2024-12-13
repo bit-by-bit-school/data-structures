@@ -11,7 +11,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/quadTree/quadTree.js"
+            "program": "${workspaceFolder}/quadTree/test.js"
         }
     ]
 }

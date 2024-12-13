@@ -1,10 +1,10 @@
-import { QuadTree, Node, Point } from "./quadTree.js";
+const { QuadTree, Node, Point } = require("./quadTree.js");
 
 let particles = [];
 let dt = 0;
 const G = 0.5;
 
-export function init(input, timeStep) {
+function init(input, timeStep) {
   particles = input.map((particle) => ({
     ...particle,
     vx: 0,
@@ -16,10 +16,10 @@ export function init(input, timeStep) {
 }
 
 function buildQuadTree() {
-  let maxX = particles[0].x,
-    maxY = particles[0].y,
-    minX = particles[0].x,
-    minY = particles[0].y;
+  let maxX = 0,
+    maxY = 0,
+    minX = Infinity,
+    minY = Infinity;
 
   for (const particle of particles) {
     if (particle.x > maxX) maxX = particle.x;
@@ -47,24 +47,34 @@ function buildQuadTree() {
 }
 
 function computeForce(tree, particle, theta) {
-  const maxForce = 1;
-  const dx = tree.centerOfMass.x - particle.x;
-  const dy = tree.centerOfMass.y - particle.y;
+  const maxForce = 100;
+  let dx, dy, s, F;
+  if (tree instanceof QuadTree) {
+    dx = tree.centerOfMass.x - particle.x;
+    dy = tree.centerOfMass.y - particle.y;
+    s = tree.bottomRight.x - tree.topLeft.x;
+  } else if (tree instanceof Node) {
+    dx = tree.pos.x - particle.x;
+    dy = tree.pos.y - particle.y;
+  }
 
   const d = Math.sqrt(dx ** 2 + dy ** 2);
-  const s = tree.bottomRight.x - tree.topLeft.x;
 
-  if (tree.isLeaf() || s / d < theta) {
-    let F = (G * tree.mass * particle.mass) / d ** 2;
+  if (tree instanceof Node) {
+    F = (G * tree.value.mass * particle.mass) / d ** 2;
+    if (F > maxForce) F = maxForce;
+
+    particle.ax += (F / particle.mass) * (dx / d);
+    particle.ay += (F / particle.mass) * (dy / d);
+  } else if (s / d < theta) {
+    F = (G * tree.mass * particle.mass) / d ** 2;
     if (F > maxForce) F = maxForce;
 
     particle.ax += (F / particle.mass) * (dx / d);
     particle.ay += (F / particle.mass) * (dy / d);
   } else {
     const children = tree.getChildren();
-    children
-      .filter((child) => child instanceof QuadTree)
-      .forEach((child) => computeForce(child, particle, theta));
+    children.forEach((child) => computeForce(child, particle, theta));
   }
 }
 
@@ -88,7 +98,7 @@ function updatePositions() {
   });
 }
 
-export function next() {
+function next() {
   computeAcceleration();
   updatePositions();
   buildQuadTree();
@@ -97,3 +107,5 @@ export function next() {
     return { x: p.x, y: p.y };
   });
 }
+
+module.exports = { init, next };

@@ -19,15 +19,15 @@ canvas.height = window.innerHeight - 10;
 
 const input = [
   { x: 100, y: 0, mass: 1 },
-  { x: -200, y: 0, mass: 2 },
-  { x: 0, y: 100, mass: 3 },
-  { x: 0, y: -100, mass: 4 },
-  { x: -150, y: 150, mass: 5 },
-  { x: 150, y: -150, mass: 6 },
-  { x: 200, y: -200, mass: 7 },
-  { x: 200, y: 0, mass: 8 },
-  { x: 0, y: -200, mass: 9 },
-  { x: 175, y: -175, mass: 10 },
+  { x: -100, y: 0, mass: 1 },
+  // { x: 0, y: 100, mass: 3 },
+  // { x: 0, y: -100, mass: 4 },
+  // { x: -150, y: 150, mass: 5 },
+  // { x: 150, y: -150, mass: 6 },
+  // { x: 200, y: -200, mass: 7 },
+  // { x: 200, y: 0, mass: 8 },
+  // { x: 0, y: -200, mass: 9 },
+  // { x: 175, y: -175, mass: 10 },
 ];
 
 function setup() {

@@ -1,18 +1,18 @@
-export class Point {
+class Point {
   constructor(x, y) {
     this.x = x;
     this.y = y;
   }
 }
 
-export class Node {
+class Node {
   constructor(pos, value) {
     this.pos = pos;
     this.value = value;
   }
 }
 
-export class QuadTree {
+class QuadTree {
   constructor(topLeft, bottomRight) {
     this.topLeft = topLeft;
     this.bottomRight = bottomRight;
@@ -30,14 +30,14 @@ export class QuadTree {
     this.centerOfMass = new Point(0, 0);
   }
 
-  isLeaf() {
-    return (
-      this.subTrees["topLeft"] == null &&
-      this.subTrees["bottomLeft"] == null &&
-      this.subTrees["topRight"] == null &&
-      this.subTrees["bottomRight"] == null
-    );
-  }
+  // isLeaf() {
+  //   return (
+  //     this.subTrees["topLeft"] instanceof Node &&
+  //     this.subTrees["bottomLeft"]instanceof Node &&
+  //     this.subTrees["topRight"]instanceof Node &&
+  //     this.subTrees["bottomRight"]instanceof Node
+  //   );
+  // }
 
   insert(node) {
     if (node == null) return;
@@ -48,14 +48,21 @@ export class QuadTree {
 
     if (this.subTrees[quadrant] == null) {
       this.subTrees[quadrant] = new Node(node.pos, node.value);
-    } else if (this.subTrees[quadrant] instanceof Node) {
+      return;
+    }
+
+    if (this.subTrees[quadrant] instanceof Node) {
       const existingNode = this.subTrees[quadrant];
       const [topLeft, bottomRight] = this.getBoundaryForQuadrant(quadrant);
       this.subTrees[quadrant] = new QuadTree(topLeft, bottomRight);
       this.subTrees[quadrant].insert(existingNode);
       this.subTrees[quadrant].insert(node);
-    } else {
+      return;
+    }
+
+    if (this.subTrees[quadrant] instanceof QuadTree) {
       this.subTrees[quadrant].insert(node);
+      return;
     }
   }
 
@@ -166,14 +173,16 @@ export class QuadTree {
   }
 }
 
-const quad = new QuadTree(new Point(0, 0), new Point(8, 8));
-const a = new Node(new Point(1, 1), 1);
-const b = new Node(new Point(2, 5), 2);
-const c = new Node(new Point(7, 6), 3);
-const d = new Node(new Point(5, 3), 4);
-quad.insert(a);
-quad.insert(b);
-quad.insert(c);
-quad.insert(d);
+// const quad = new QuadTree(new Point(0, 0), new Point(8, 8));
+// const a = new Node(new Point(1, 1), 1);
+// const b = new Node(new Point(2, 5), 2);
+// const c = new Node(new Point(7, 6), 3);
+// const d = new Node(new Point(5, 3), 4);
+// quad.insert(a);
+// quad.insert(b);
+// quad.insert(c);
+// quad.insert(d);
 // const quad1 = new QuadTree(new Point(0, 0), new Point(4, 4));
-console.log([...quad]);
+// console.log([...quad]);
+
+module.exports = { Point, Node, QuadTree };
