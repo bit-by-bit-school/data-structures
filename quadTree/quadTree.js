@@ -1,18 +1,18 @@
-class Point {
+export class Point {
   constructor(x, y) {
     this.x = x;
     this.y = y;
   }
 }
 
-class Node {
+export class Node {
   constructor(pos, value) {
     this.pos = pos;
     this.value = value;
   }
 }
 
-class QuadTree {
+export class QuadTree {
   constructor(topLeft, bottomRight) {
     this.topLeft = topLeft;
     this.bottomRight = bottomRight;
@@ -29,15 +29,6 @@ class QuadTree {
     this.mass = 0;
     this.centerOfMass = new Point(0, 0);
   }
-
-  // isLeaf() {
-  //   return (
-  //     this.subTrees["topLeft"] instanceof Node &&
-  //     this.subTrees["bottomLeft"]instanceof Node &&
-  //     this.subTrees["topRight"]instanceof Node &&
-  //     this.subTrees["bottomRight"]instanceof Node
-  //   );
-  // }
 
   insert(node) {
     if (node == null) return;
@@ -65,15 +56,6 @@ class QuadTree {
       return;
     }
   }
-
-  // inBoundary(point) {
-  //   return (
-  //     point.x >= this.topLeft.x &&
-  //     point.x <= this.bottomRight.x &&
-  //     point.y >= this.topLeft.y &&
-  //     point.y <= this.bottomRight.y
-  //   );
-  // }
 
   updateMassAndCoM(node) {
     const totalMass = this.mass + node.value.mass;
@@ -185,4 +167,4 @@ class QuadTree {
 // const quad1 = new QuadTree(new Point(0, 0), new Point(4, 4));
 // console.log([...quad]);
 
-module.exports = { Point, Node, QuadTree };
+// module.exports = { Point, Node, QuadTree };

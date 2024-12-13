@@ -1,10 +1,11 @@
-const { QuadTree, Node, Point } = require("./quadTree.js");
+// const { QuadTree, Node, Point } = require("./quadTree.js");
+import { QuadTree, Node, Point } from "./quadTree.js";
 
 let particles = [];
 let dt = 0;
 const G = 0.5;
 
-function init(input, timeStep) {
+export function init(input, timeStep) {
   particles = input.map((particle) => ({
     ...particle,
     vx: 0,
@@ -16,8 +17,8 @@ function init(input, timeStep) {
 }
 
 function buildQuadTree() {
-  let maxX = 0,
-    maxY = 0,
+  let maxX = -Infinity,
+    maxY = -Infinity,
     minX = Infinity,
     minY = Infinity;
 
@@ -47,7 +48,7 @@ function buildQuadTree() {
 }
 
 function computeForce(tree, particle, theta) {
-  const maxForce = 100;
+  const maxForce = 0.01;
   let dx, dy, s, F;
   if (tree instanceof QuadTree) {
     dx = tree.centerOfMass.x - particle.x;
@@ -59,6 +60,14 @@ function computeForce(tree, particle, theta) {
   }
 
   const d = Math.sqrt(dx ** 2 + dy ** 2);
+
+  if (
+    tree instanceof Node &&
+    tree.pos.x === particle.x &&
+    tree.pos.y === particle.y
+  ) {
+    return;
+  }
 
   if (tree instanceof Node) {
     F = (G * tree.value.mass * particle.mass) / d ** 2;
@@ -98,7 +107,7 @@ function updatePositions() {
   });
 }
 
-function next() {
+export function next() {
   computeAcceleration();
   updatePositions();
   buildQuadTree();
@@ -108,4 +117,4 @@ function next() {
   });
 }
 
-module.exports = { init, next };
+// module.exports = { init, next };
