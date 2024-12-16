@@ -1,9 +1,12 @@
-// const { QuadTree, Node, Point } = require("./quadTree.js");
 import { QuadTree, Node, Point } from "./quadTree.js";
 
 let particles = [];
 let dt = 0;
 const G = 0.5;
+
+let count1 = 0,
+  count2 = 0,
+  count3 = 0;
 
 export function init(input, timeStep) {
   particles = input.map((particle) => ({
@@ -17,10 +20,10 @@ export function init(input, timeStep) {
 }
 
 function buildQuadTree() {
-  let maxX = -Infinity,
-    maxY = -Infinity,
-    minX = Infinity,
-    minY = Infinity;
+  let maxX = particles[0].x,
+    maxY = particles[0].y,
+    minX = particles[0].x,
+    minY = particles[0].y;
 
   for (const particle of particles) {
     if (particle.x > maxX) maxX = particle.x;
@@ -48,7 +51,7 @@ function buildQuadTree() {
 }
 
 function computeForce(tree, particle, theta) {
-  const maxForce = 0.01;
+  const maxForce = 0.001;
   let dx, dy, s, F;
   if (tree instanceof QuadTree) {
     dx = tree.centerOfMass.x - particle.x;
@@ -72,16 +75,19 @@ function computeForce(tree, particle, theta) {
   if (tree instanceof Node) {
     F = (G * tree.value.mass * particle.mass) / d ** 2;
     if (F > maxForce) F = maxForce;
+    count1++;
 
     particle.ax += (F / particle.mass) * (dx / d);
     particle.ay += (F / particle.mass) * (dy / d);
   } else if (s / d < theta) {
     F = (G * tree.mass * particle.mass) / d ** 2;
     if (F > maxForce) F = maxForce;
+    count2++;
 
     particle.ax += (F / particle.mass) * (dx / d);
     particle.ay += (F / particle.mass) * (dy / d);
   } else {
+    count3++;
     const children = tree.getChildren();
     children.forEach((child) => computeForce(child, particle, theta));
   }
@@ -111,10 +117,9 @@ export function next() {
   computeAcceleration();
   updatePositions();
   buildQuadTree();
+  // console.log("count1=", count1, "count2=", count2, "count3=", count3);
 
   return particles.map((p) => {
     return { x: p.x, y: p.y };
   });
 }
-
-// module.exports = { init, next };
