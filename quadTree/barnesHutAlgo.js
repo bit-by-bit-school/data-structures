@@ -101,6 +101,7 @@ function computeAcceleration() {
     particle.ay = 0;
     computeForce(quadTree, particle, theta);
   });
+  return quadTree;
 }
 
 function updatePositions() {
@@ -116,10 +117,13 @@ function updatePositions() {
 export function next() {
   computeAcceleration();
   updatePositions();
-  buildQuadTree();
+  const quadTree = buildQuadTree();
   // console.log("count1=", count1, "count2=", count2, "count3=", count3);
 
-  return particles.map((p) => {
-    return { x: p.x, y: p.y };
-  });
+  return [
+    particles.map((p) => {
+      return { x: p.x, y: p.y };
+    }),
+    quadTree,
+  ];
 }
