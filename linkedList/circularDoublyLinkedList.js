@@ -59,9 +59,10 @@ class CircularDoublyLinkedList {
 		return newNode
 	}
 	insert(val, index) {
+		console.log("val", val, "index",index)
 		if (index > this.length) throw this.#invalidIndexError
-		if (index === 0) this.#insertStart(val)
-		if (index === this.length) this.#insertEnd(val)
+		else if (index === 0) this.#insertStart(val)
+		else if (index === this.length) this.#insertEnd(val)
 		else this.#insertMiddle(val, index)
 		this.length++
 	}
@@ -74,6 +75,7 @@ class CircularDoublyLinkedList {
 		this.#end = newNode
 	}
 	#insertMiddle(val, index) {
+		console.log("val", val, "index", index)
 		const prev = this.#traverse(index)
 		this.#create(val, prev, prev.next)
 	}
@@ -121,6 +123,15 @@ class CircularDoublyLinkedList {
 			currNode = currNode.next
 		}
 		return vals
+	}
+	*[Symbol.iterator]() { // use traverse function instead and shift the role of finding value to resp functions that use traverse
+		let currNode = this.#head
+		let i = 1
+		while (currNode !== this.#end) {
+			yield [currNode.val, i]
+			currNode = currNode.next
+			i++
+		}
 	}
 }
 

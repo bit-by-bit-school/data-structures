@@ -1,77 +1,58 @@
-const fillWeightedGraph = (edges, n) => {
-    const matrix = Array(n)
+const { AdjacencyMatrix } = require("./representations/adjacencyMatrix.js");
+const { dfs } = require("./traversal/depthFirstSearch.js");
+
+class Graph {
+  matrix;
+  length;
+  isConnected;
+  constructor(edges, n) {
+    // this.matrix = new AdjacencyMatrix(edges, n);
+    this.matrix = Array(n)
       .fill()
       .map(() => Array(n).fill(0));
-    edges.forEach((e) => {
-      this.matrix[e[0]][e[1]] = e[2];
-      this.matrix[e[1]][e[0]] = e[2];
+    if (edges.length) {
+      edges.forEach((e) => {
+        this.matrix[e[0]][e[1]] = e[2];
+        this.matrix[e[1]][e[0]] = e[2];
+      });
+    }
+    this.length = n;
+    this.checkConnected();
+  }
+  *[Symbol.iterator]() {
+    for (let i = 0; i < dfs(this.matrix, this.length); i++) {
+      yield obj.value;
+    }
+  }
+  checkConnected() {
+    dfs(this.matrix, this.length).forEach((obj, i) => {
+      if (i === this.length - 1) {
+        const unvisited = obj.visited.indexOf(0);
+        this.isConnected = unvisited === -1 ? true : false;
+      }
     });
-    return matrix;
-  };
-
-  class Graph {
-    matrix;
-    length;
-    constructor(edges, n) {
-      this.matrix = fillWeightedGraph(edges, n);
-      this.length = n;
-    }
-
-    [Symbol.iterator]() {
-      const stack = [];
-      const visited = [];
-      const matrix = this.matrix;
-      const length = this.length;
-      let done = false;
-      return {
-        next() {
-          if (done === true)
-            return {
-              value: undefined,
-              done: true,
-            };
-          if (!stack.length) {
-            visited[0] = 1;
-            stack.push([0, 0]);
-          }
-          let [currParent, prevChild] = stack.pop();
-          let currChild = prevChild + 1;
-          while (currParent <= length - 1 && currChild <= length - 1) {
-            if (matrix[currParent][currChild] && !visited[currChild]) {
-              visited[currChild] = 1;
-              stack.push([currParent, currChild]);
-              currParent = currChild;
-              currChild = 0;
-              continue;
-            }
-            currChild++;
-          }
-          const value = stack[stack.length - 1] ? stack[stack.length - 1][1] : 0;
-          if (value === 0) done = true;
-          return {
-            value,
-            done: false,
-          };
-        },
-      };
-    }
   }
-
-  const g1 = new Graph(
-    [
-      [0, 1],
-      [1, 2],
-      [1, 4],
-      [2, 3],
-      [2, 4],
-      [0, 5],
-      [4, 5],
-    ],
-    6
-  );
-
-  for (let n of g1) {
-    console.log("iter", n);
+  addEdge(edge) {
+    this.matrix[edge[0]][edge[1]] = 1;
+    this.matrix[edge[1]][edge[0]] = 1;
   }
+}
 
-  module.exports = { Graph };
+const g1 = new Graph(
+  [
+    [0, 1, 2],
+    [1, 2, 2],
+    [1, 4, 2],
+    [2, 3, 2],
+    [2, 4, 2],
+    [0, 5, 2],
+    [4, 5, 2],
+  ],
+  6
+);
+
+for (let node of g1) {
+  console.log("iter", node);
+}
+
+module.exports = { Graph };

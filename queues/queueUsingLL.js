@@ -1,4 +1,4 @@
-const { CircularDoublyLinkedList, Node } = require("./circularDoublyLinkedList.js")
+const { CircularDoublyLinkedList, Node } = require("../linkedList/circularDoublyLinkedList.js")
 
 class Queue {
 	#storage
