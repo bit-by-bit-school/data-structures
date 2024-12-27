@@ -1,12 +1,15 @@
 class PriorityQueue {
   storage = [];
+  length = 0;
   constructor(objs) {
     this.storage = objs.sort((a, b) => b.val - a.val);
+    this.length = objs.length;
   }
   enqueue(newObj) {
     if (!this.storage.length) {
-        this.storage.push(newObj)
-        return
+      this.storage.push(newObj);
+      this.length++;
+      return;
     }
     for (let [i, obj] of this.storage.entries()) {
       if (obj.val < newObj.val) {
@@ -15,13 +18,16 @@ class PriorityQueue {
           newObj,
           ...this.storage.slice(i, this.storage.length),
         ];
-        break;
+        this.length++;
+        return;
       }
     }
-    this.storage.push(newObj)
+    this.storage.push(newObj);
+    this.length++;
   }
   dequeue() {
-    return this.storage.pop();
+      this.length--;
+      return this.storage.pop();
   }
   getAll() {
     return this.storage;
@@ -36,7 +42,23 @@ class PriorityQueue {
           ...this.storage.slice(0, i),
           ...this.storage.slice(i + 1, this.storage.length),
         ];
-        break;
+        this.length--;
+        return;
+      }
+    }
+  }
+  set(v, val) {
+    for (let obj of this.storage) {
+      if (obj.v === v) {
+        obj.val = val;
+        return;
+      }
+    }
+  }
+  get(v) {
+    for (let obj of this.storage) {
+      if (obj.v === v) {
+        return obj.val;
       }
     }
   }
