@@ -3,30 +3,31 @@ const { dfs } = require("./traversal/depthFirstSearch.js");
 
 class Graph {
   matrix;
-  length;
+  V = 0;
+  E = 0;
   isConnected;
-  constructor(edges, n) {
-    // this.matrix = new AdjacencyMatrix(edges, n);
-    this.matrix = Array(n)
+  constructor(edges, V) {
+    this.matrix = Array(V)
       .fill()
-      .map(() => Array(n).fill(0));
+      .map(() => Array(V).fill(0));
     if (edges.length) {
       edges.forEach((e) => {
         this.matrix[e[0]][e[1]] = e[2];
         this.matrix[e[1]][e[0]] = e[2];
       });
     }
-    this.length = n;
+    this.V = V;
+    this.E = edges.length
     this.checkConnected();
   }
   *[Symbol.iterator]() {
-    for (let i = 0; i < dfs(this.matrix, this.length); i++) {
+    for (let i = 0; i < dfs(this.matrix, this.V); i++) {
       yield obj.value;
     }
   }
   checkConnected() {
-    dfs(this.matrix, this.length).forEach((obj, i) => {
-      if (i === this.length - 1) {
+    dfs(this.matrix, this.V).forEach((obj, i) => {
+      if (i === this.V - 1) {
         const unvisited = obj.visited.indexOf(0);
         this.isConnected = unvisited === -1 ? true : false;
       }

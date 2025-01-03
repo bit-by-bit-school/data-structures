@@ -29,38 +29,8 @@ class PriorityQueue {
       this.length--;
       return this.storage.pop();
   }
-  getAll() {
-    return this.storage;
-  }
   *[Symbol.iterator]() {
     yield* this.storage.entries();
-  }
-  delete(obj) {
-    for (let [i, n] of this.storage.entries()) {
-      if (obj === n) {
-        this.storage = [
-          ...this.storage.slice(0, i),
-          ...this.storage.slice(i + 1, this.storage.length),
-        ];
-        this.length--;
-        return;
-      }
-    }
-  }
-  set(v, val) {
-    for (let obj of this.storage) {
-      if (obj.v === v) {
-        obj.val = val;
-        return;
-      }
-    }
-  }
-  get(v) {
-    for (let obj of this.storage) {
-      if (obj.v === v) {
-        return obj.val;
-      }
-    }
   }
 }
 

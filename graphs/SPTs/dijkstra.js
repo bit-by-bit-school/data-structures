@@ -1,48 +1,38 @@
 const { Graph } = require("../weightedGraph.js");
-const { PriorityQueue } = require("../../queues/PQusingArrays.js");
+const { IndexMinPQ } = require("../../queues/indexMinPQ.js");
 
 const dijkstra = (G, s) => {
+  console.log("about graph", G);
   if (!G.isConnected) return false;
-  const distTo = Array(G.length).fill(Infinity);
+  const distTo = new Array(G.V).fill(Infinity);
   distTo[s] = 0;
-  const edgeTo = Array(G.length);
+  const edgeTo = new Array(G.V);
   edgeTo[s] = s;
-  const pq = new PriorityQueue(
+  const pq = new IndexMinPQ(
     distTo.map((d, i) => {
       return {
         val: d,
-        v: i,
+        key: i,
+        priority: d,
       };
     })
   );
 
   while (pq.length) {
-    const v = pq.dequeue().v;
-    for (let u = 0; u < G.length; u++) {
-      if (G.matrix[v][u] && distTo[u] > distTo[v] + G.matrix[v][u]) {
-        distTo[u] = distTo[v] + G.matrix[v][u];
-        edgeTo[u] = v;
-        pq.set(u, distTo[v] + G.matrix[v][u]);
+    const v = pq.getMin();
+    for (let u = 0; u < G.V; u++) {
+      if (
+        G.matrix[v.key][u] &&
+        distTo[u] > distTo[v.key] + G.matrix[v.key][u]
+      ) {
+        distTo[u] = distTo[v.key] + G.matrix[v.key][u];
+        edgeTo[u] = v.key;
+        pq.set(u, distTo[v] + G.matrix[v.key][u]);
       }
     }
   }
 
   return edgeTo;
 };
-
-const G = new Graph(
-  [
-    [0, 1, 5],
-    [1, 2, 2],
-    [1, 4, 4],
-    [2, 3, 6],
-    [2, 4, 3],
-    [0, 5, 1],
-    [4, 5, 1],
-  ],
-  6
-);
-
-console.log(dijkstra(G, 0));
 
 module.exports = { dijkstra };

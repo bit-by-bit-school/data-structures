@@ -15,7 +15,6 @@ test("Enqueue to PQ", () => {
   q.enqueue({
     val: 4
   });
-  expect(q.getAll().length).toBe(4);
   expect(q.dequeue().val).toBe(1);
   expect(q.dequeue().val).toBe(2);
   expect(q.dequeue().val).toBe(3);
